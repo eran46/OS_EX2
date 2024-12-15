@@ -1,4 +1,25 @@
+#include "common.h"
 
+
+// Main function to read the command file and parse each line
+void parse_cmdfile(FIle* file) {
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), file)) {
+        // Remove trailing newline or spaces
+        line[strcspn(line, "\n")] = 0;
+        while (isspace(line[strlen(line) - 1])) {
+            line[strlen(line) - 1] = 0;  // Trim trailing spaces
+        }
+
+        if (strlen(line) == 0) {
+            continue;  // Skip empty lines
+        }
+
+        parse_line(line);
+    }
+
+    fclose(file);
+}
 
 // TODO: action per each command 
 void parse_line(const char *line) {
@@ -22,26 +43,3 @@ void parse_line(const char *line) {
         // Here, we would push the job to the work queue for the worker threads
     }
 }
-
-// Main function to read the command file and parse each line
-void parse_cmdfile(char *filename) {
-    
-
-    char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file)) {
-        // Remove trailing newline or spaces
-        line[strcspn(line, "\n")] = 0;
-        while (isspace(line[strlen(line) - 1])) {
-            line[strlen(line) - 1] = 0;  // Trim trailing spaces
-        }
-
-        if (strlen(line) == 0) {
-            continue;  // Skip empty lines
-        }
-
-        parse_line(line);
-    }
-
-    fclose(file);
-}
-

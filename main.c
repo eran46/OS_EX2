@@ -1,17 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#
 
-#ifndef CMD_ARGS_NUM
-#define CMD_ARGS_NUM 4
-#endif
-#ifndef MAX_LINE_LENGTH
-#define MAX_LINE_LENGTH 1024
-#endif
-#ifndef MAX_CMD_LENGTH
-#define  MAX_CMD_LENGTH 256
-#endif
+#include "common.h"
+#include "dispatcher.h"
 
 void print_error(char* err) {
 	printf("Error: %s\n", err);
@@ -38,12 +30,13 @@ int main(int argc, char *argv[]) {
     int num_threads = parse_str_to_int(argv[2]);
     int num_counters = parse_str_to_int(argv[3]);
     char log_enabled = parse_str_to_int(argv[4]);
-    FILE *file = fopen(argv[1], "r");
+    FILE* cmdfile = fopen(argv[1], "r");
     if (file == NULL) {
         print_error("Error opening cmdfile.txt");
     }
     
     // send to dispatcher
+    parse_cmdfile(FIle* cmdfile)
     
     //next
     
