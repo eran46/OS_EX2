@@ -2,17 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "queue.h"
 #include "common.h"
 #include "dispatcher.h"
 #include "utils.h"
 
-void print_error(char* err) {
-	printf("Error: %s\n", err);
-}
+// global task queue object
+TaskQueue queue;
 
 // arguments: cmdfile.txt num_threads num_counters log_enabled
 int main(int argc, char *argv[]) {
-    
+    init_queue(&queue); // gets queue POINTER
     if (argc != CMD_ARGS_NUM + 1) {
         print_error("incorrect number of command line arguments");
         return 1;
@@ -28,6 +28,9 @@ int main(int argc, char *argv[]) {
     // initialize mutex and cond
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&cond, NULL);
+    
+    // initialize counter files
+    init_counter_files(num_counters);
     
     // send to dispatcher
     parse_cmdfile(FIle* cmdfile);
