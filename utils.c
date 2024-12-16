@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "common.h"
+
 
 int str_to_int(char* num_str) {
 	int num = 0;
@@ -35,3 +37,14 @@ void print_general(char* text) {
 void print_error(char* err) {
 	printf("Error: %s\n", err);
 }
+
+void print_statistics(long long int total_time) {
+	File* f = fopen("stats.txt", "w");
+	fprintf(f, "total running time: %lld milliseconds\n", total_time);
+	printf(, "sum of jobs turnaround time: %lld milliseconds\n", jobs_time_sum);
+	printf(, "min job turnaround time: %lld milliseconds\n", jobs_time_min);
+	printf(, "average job turnaround time: %f milliseconds\n", (jobs_time_sum/jobs_count));
+	printf(, "max job turnaround time: %lld milliseconds\n", jobs_time_max);
+	fclose(f);
+}
+

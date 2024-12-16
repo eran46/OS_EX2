@@ -4,3 +4,8 @@
 
 
 extern TaskQueue queue;
+int jobs_count = 0;
+long long int jobs_time_sum = 0;
+long long int jobs_time_min = 0;
+long long int jobs_time_max = 0;
+

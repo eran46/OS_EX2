@@ -12,6 +12,9 @@ TaskQueue queue;
 
 // arguments: cmdfile.txt num_threads num_counters log_enabled
 int main(int argc, char *argv[]) {
+    struct timeval start_time; // get program start time
+    gettimeofday(&start_time, NULL);
+
     init_queue(&queue); // gets queue POINTER
     if (argc != CMD_ARGS_NUM + 1) {
         print_error("incorrect number of command line arguments");
@@ -35,12 +38,20 @@ int main(int argc, char *argv[]) {
     // send to dispatcher
     parse_cmdfile(FIle* cmdfile);
     
-    //next?
+    // wait for all working threads to finish
+    dispatcher_wait();
     
+    //statistics output
+    struct timeval end_time; // get program start time
+    gettimeofday(&end_time, NULL);
+    print_statistics(end_time-start_time); // is this long long int?
     
     // destroy mutex and cond
     pthread_mutex_destroy(&mutex);
     pthread_cond_destroy(&cond);
+    
+    // cleanup
+    // close all files
     
     
     return 0;
