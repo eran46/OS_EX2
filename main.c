@@ -4,20 +4,10 @@
 
 #include "common.h"
 #include "dispatcher.h"
+#include "utils.h"
 
 void print_error(char* err) {
 	printf("Error: %s\n", err);
-}
-
-int parse_str_to_int(char* num_str) {
-	int num = 0;
-	int digit_factor = 1;
-	int len = strlen(num_str);
-	for(int i = len - 1; i >= 0; i--){
-		num += (num_str[i] - '0') * digit_factor;
-		digit_factor *= 10;
-	}
-	return num;
 }
 
 // arguments: cmdfile.txt num_threads num_counters log_enabled
@@ -27,18 +17,30 @@ int main(int argc, char *argv[]) {
         print_error("incorrect number of command line arguments");
         return 1;
     }
-    int num_threads = parse_str_to_int(argv[2]);
-    int num_counters = parse_str_to_int(argv[3]);
-    char log_enabled = parse_str_to_int(argv[4]);
+    int num_threads = str_to_int(argv[2]);
+    int num_counters = str_to_int(argv[3]);
+    char log_enabled = str_to_int(argv[4]);
     FILE* cmdfile = fopen(argv[1], "r");
     if (file == NULL) {
         print_error("Error opening cmdfile.txt");
     }
     
-    // send to dispatcher
-    parse_cmdfile(FIle* cmdfile)
+    // initialize mutex and cond
+    pthread_mutex_init(&mutex, NULL);
+    pthread_cond_init(&cond, NULL);
     
-    //next
+    // send to dispatcher
+    parse_cmdfile(FIle* cmdfile);
+    
+    //next?
+    
+    
+    // destroy mutex and cond
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&cond);
+    
     
     return 0;
 }
+
+
