@@ -1,7 +1,32 @@
+#include <pthread.h>
+
 #include "common.h"
+#include "utils.h"
+#include "queue.h"
 
 
-// Main function to read the command file and parse each line
+pthread_mutex_t mutex;
+pthread_cond_t cond;
+int active_threads = 0;
+
+void print_general(char* text) {
+	printf("general print: %s\n",text);
+}
+
+// mode: -1 decrement, 1 increment
+void* active_threads_counter(void* arg, int mode) { // void ptr - must for thread create routine
+	pthread_mutex_lock(&mutex);
+	switch(mode) {
+	case (1):
+		active_threads++;
+	case (-1):
+		active_threads--;
+	}
+	pthread_mutex_unlock(&mutex);
+	return NULL;
+}
+
+// function to read the command file and parse each line
 void parse_cmdfile(FIle* file) {
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
@@ -21,19 +46,30 @@ void parse_cmdfile(FIle* file) {
     fclose(file);
 }
 
+void dispatcher_wait() {
+	pthread_mutex_lock(&mutex);
+	while(active_threads > 0) {
+		print_general("waiting for active == 0");
+		pthread_cond_wait(&cond, &mutex)
+	}
+	pthread_mutex_unlock(&mutex);
+	print_general("finished waiting");
+}
+
 // TODO: action per each command 
 void parse_line(const char *line) {
     if (strncmp(line, "dispatcher", 10) == 0) {
         // It's a dispatcher command
         if (strncmp(line + 11, "msleep", 6) == 0) {
             // dispatcher msleep <x>
-            long msleep_time = strtol(line + 18, NULL, 10);
-            printf("Dispatcher sleep for %ld milliseconds\n", msleep_time);
-            usleep(msleep_time * 1000); // Sleep in milliseconds
+            token = strtok(line + 18, " ;");
+            long sleep_time_ms = str_to_int(token);
+            printf("Dispatcher sleep for %ld milliseconds\n", sleep_time_ms);
+            msleep(sleep_time_us);
         } else if (strncmp(line + 11, "wait", 4) == 0) {
             // dispatcher wait
             printf("Dispatcher waiting for worker jobs to complete\n");
-            // Implement waiting for workers to finish if needed
+            dispatcher_wait();
         } else {
             printf("Unknown dispatcher command: %s\n", line);
         }
