@@ -9,9 +9,6 @@ pthread_mutex_t mutex;
 pthread_cond_t cond;
 int active_threads = 0;
 
-void print_general(char* text) {
-	printf("general print: %s\n",text);
-}
 
 // mode: -1 decrement, 1 increment
 void* active_threads_counter(void* arg, int mode) { // void ptr - must for thread create routine
@@ -64,18 +61,19 @@ void parse_line(const char *line) {
             // dispatcher msleep <x>
             token = strtok(line + 18, " ;");
             long sleep_time_ms = str_to_int(token);
-            printf("Dispatcher sleep for %ld milliseconds\n", sleep_time_ms);
+            print_general("Dispatcher sleep for milliseconds");
             msleep(sleep_time_us);
         } else if (strncmp(line + 11, "wait", 4) == 0) {
             // dispatcher wait
-            printf("Dispatcher waiting for worker jobs to complete\n");
+            print_general("Dispatcher waiting for worker jobs to complete");
             dispatcher_wait();
         } else {
-            printf("Unknown dispatcher command: %s\n", line);
+            print_error("Unknown dispatcher command");
         }
     } else {
         // It's a worker job
-        printf("Worker job: %s\n", line);
+        print_general("Worker job: %s\n", line);
         // Here, we would push the job to the work queue for the worker threads
+        enqueue(&queue, line); // TODO: check arguments
     }
 }

@@ -8,7 +8,7 @@
 // linked list
 typedef struct Node {
     int task_id;
-    char job_line[256];  // Copy of the job line
+    char job_line[1024];  // Copy of the job line
     struct Node* next;
 } Node;
 
