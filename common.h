@@ -1,5 +1,13 @@
-#include "queue.h"
+#ifndef COMMON_H
+#define COMMON_H
 
+#ifndef QUEUE_H
+#define QUEUE_H
+#include "queue.h"
+#endif
+
+#include <pthread.h>
+#include <sys/time.h>
 
 #define CMD_ARGS_NUM 4
 #define MAX_LINE_LENGTH 1024
@@ -18,3 +26,4 @@ extern long long int jobs_time_min; // common.c
 extern long long int jobs_time_max; // common.c
 extern char log_enabled; // common.c
 
+#endif

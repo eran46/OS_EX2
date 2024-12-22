@@ -4,10 +4,25 @@
 #include <sys/time.h>
 #include <pthread.h>
 
+#ifndef QUEUE_H
+#define QUEUE_H
 #include "queue.h"
-#include "common.h"
+#endif
+
+#ifndef DISPATCHER_H
+#define DISPATCHER_H
 #include "dispatcher.h"
+#endif
+
+#ifndef UTILS_H
+#define UTILS_H
 #include "utils.h"
+#endif
+
+#ifndef COMMON_H
+#define COMMON_H
+#include "common.h"
+#endif
 
 // global task queue object
 TaskQueue queue;
