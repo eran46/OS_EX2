@@ -24,6 +24,7 @@ Node* dequeue(TaskQueue* queue);
 
 void destroy_queue(TaskQueue* queue);
 
-long long elapsed_time_ms(struct timeval start_time);
+long long int elapsed_time_ms(struct timeval start_time);
+
 
 #endif

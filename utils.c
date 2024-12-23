@@ -24,7 +24,7 @@ void* active_threads_counter(int mode) {
 		active_threads--;
 	default:
 		pthread_mutex_unlock(&mutex);
-        	fprintf("invalid mode value, ignored.\n", mode);
+        	print_general("invalid mode value, ignored.\n");
 	}
 	pthread_mutex_unlock(&mutex);
 	return NULL;
@@ -42,9 +42,9 @@ int str_to_int(char* num_str) {
 }
 
 void init_counter_files(int num_counters) {
-	for(int i=0; i<num_counters; i++) {
+	for(int i=0; i<num_counters && i <= 99; i++) { // avoid warning
 		char filename[12];
-		sprintf(filename, "count%02d.txt", i);
+		snprintf(filename, sizeof(filename), "count%02d.txt", i);
 		FILE* f = fopen(filename, "w");
 		if(f == NULL) {
 			print_error("failed to open file");

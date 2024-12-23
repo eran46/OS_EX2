@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <pthread.h>
@@ -9,10 +10,6 @@
 
 
 pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex to protect file access
-
-void msleep(int milliseconds) {
-    usleep(milliseconds * 1000); // Convert milliseconds to microseconds
-}
 
 void increment(const char* filename) {
     pthread_mutex_lock(&file_mutex);
@@ -66,7 +63,8 @@ void trim_spaces(char* str) {
     *(end + 1) = '\0';
 }
 
-void update_min_max_sum_times(struct timeval job_time_elapsed){
+
+void update_min_max_sum_times(long long int job_time_elapsed){
     if(job_time_elapsed >= jobs_time_max){
     	jobs_time_max = job_time_elapsed;
     }
@@ -90,18 +88,22 @@ void* worker_thread(void* arg) {
             pthread_exit(NULL); // ???
         }
     }
-
-    while (task_node != NULL && dispatcher_done_flag == 1) {
-        Node* task_node = dequeue(queue);
-   
+    
+    
+    while (1) {
+    	// first dequeue
+    	Node* task_node = dequeue(&queue); // dequeue has cond locking on threads, waits
+    
+    	// task_node = NULL only when thread was asleep and wokeup to empty queue
         if (task_node == NULL) {
-            continue; // if queue empty, keep checking
+	    break;
         }
 	
-        if (task_node->job_line == NULL || strlen(task_node->job_line) == 0) {
-            free(task_node);
-            continue;
-        }
+	// makes a warning
+        //if (task_node->job_line == NULL || strlen(task_node->job_line) == 0) { // bad line in queue
+        //    free(task_node);
+        //    continue;
+        // }
         
         // ----------> continue if thread has "good" job
 	struct timeval job_start_time;
@@ -157,24 +159,24 @@ void* worker_thread(void* arg) {
 			    	print_error("allocate memory for copy of commands to repeat  in worker");
 			    }	
 	    		    strcpy(repeat_commands_cpy, repeat_commands);
-	    		    shit_token = strtok(repeat_commands_cpy, ";");
+	    		    char* shit_token = strtok(repeat_commands_cpy, ";");
 	    		    while(shit_token != NULL){
-	    		    	if (strncmp(repeat_command, "increment", 9) == 0) {
+	    		    	if (strncmp(shit_token, "increment", 9) == 0) {
 	        			char counter_file[256];
-	        			sscanf(repeat_command, "increment %s", counter_file);
+	        			sscanf(shit_token, "increment %s", counter_file);
 	        			increment(counter_file);
-	    			} else if (strncmp(repeat_command, "decrement", 9) == 0) {
+	    			} else if (strncmp(shit_token, "decrement", 9) == 0) {
 	        			char counter_file[256];
-	        			sscanf(repeat_command, "decrement %s", counter_file);
+	        			sscanf(shit_token, "decrement %s", counter_file);
 	        			decrement(counter_file);
-	    			} else if (strncmp(repeat_command, "msleep", 6) == 0) {
+	    			} else if (strncmp(shit_token, "msleep", 6) == 0) {
 	        			int ms;
-	        			sscanf(repeat_command, "msleep %d", &ms);
+	        			sscanf(shit_token, "msleep %d", &ms);
 	        			msleep(ms);
 	    			}
 	    			shit_token = strtok(NULL, ";");
 	    		    }
-	    		    free(repeat_commands_cpy)
+	    		    free(repeat_commands_cpy);
 	    		    command = NULL;
 	    		    
 	    		}
@@ -189,10 +191,11 @@ void* worker_thread(void* arg) {
 	update_min_max_sum_times(job_time_elapsed);
 	
 	if (log_enabled == 1) {
-        	logfile_out(logfile, task_node, program_start_time)
-	}
-        free(task_node->job_line)    		
+        	logfile_out(logfile, task_node, program_start_time);
+	}  		
         free(task_node);
+        
+        task_node = dequeue(&queue); 
     }
 
     if (log_enabled == 1) {
@@ -202,7 +205,6 @@ void* worker_thread(void* arg) {
     return NULL; // return NULL finishes the thread
 }
 
-// ??? - added argument num_threads
 ptr_threads_args* create_worker_threads(int num_threads) {
     ptr_threads_args* ptr_save = (ptr_threads_args*)malloc(sizeof(ptr_threads_args));
     if(ptr_save == NULL){
@@ -229,7 +231,7 @@ ptr_threads_args* create_worker_threads(int num_threads) {
     return ptr_save;
     
 }
-void destroy_threads(pthread_t* threads){
+void destroy_threads(pthread_t* threads, int num_threads){
     for (int i = 0; i < num_threads; i++) {
         pthread_join(threads[i], NULL); // wait for 
     }

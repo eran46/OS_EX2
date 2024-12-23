@@ -2,7 +2,6 @@
 #define COMMON_H
 
 #include "queue.h"
-
 #include <pthread.h>
 #include <sys/time.h>
 

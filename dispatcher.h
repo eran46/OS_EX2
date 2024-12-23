@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "queue.h"
 #include "worker.h"
+#include <stdio.h>
 
 /**
  * @brief dispatcher waits untill worker queue empty.

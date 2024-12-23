@@ -3,10 +3,16 @@
 
 #include "common.h"
 
+
+// DEBUG
+void print_general(char* text);
+// DEBUG
+void print_error(char* err);
+
 /**
  //rewrite
  */
-void* active_threads_counter(int arg);
+void* active_threads_counter(int mode);
 
 /**
  * @brief convert numerical string to integer int.
@@ -31,11 +37,6 @@ void init_counter_files(int num_counters);
  * @brief initializes dispatcher dispatcher.txt log file
  */
 void init_dispatcher_log();
-
-// DEBUG
-void print_general(char* text);
-// DEBUG
-void print_error(char* err);
 
 /**
  * @brief returns elapsed time since the start of the program to current time.
