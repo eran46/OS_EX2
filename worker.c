@@ -54,6 +54,7 @@ void logfile_out(FILE* logfile, Node* task_node, struct timeval start_time) {
     fflush(logfile);
 }
 
+
 void* worker_thread(void* arg) {
     ThreadArgs* args = (ThreadArgs*)arg;
     TaskQueue* queue = args->queue;
