@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include "worker.h"
+#include <ctype.h>
 
 
 pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex to protect file access
@@ -51,22 +52,21 @@ void logfile_out(FILE* logfile, Node* task_node, struct timeval start_time) {
     fflush(logfile);
 }
 
-// Function to trim leading and trailing spaces
+// function to trim leading and trailing spaces
 void trim_spaces(char* str) {
     char* end;
 
-    // Trim leading spaces
+    // trim leading spaces
     while (isspace((unsigned char)*str)) str++;
 
-    // Trim trailing spaces
+    // trim trailing spaces
     end = str + strlen(str) - 1;
     while (end > str && isspace((unsigned char)*end)) end--;
-
-    // Write new null terminator
+    // write new null terminator
     *(end + 1) = '\0';
 }
 
-void update_min_max_sum_times(job_time_elapsed){
+void update_min_max_sum_times(struct timeval job_time_elapsed){
     if(job_time_elapsed >= jobs_time_max){
     	jobs_time_max = job_time_elapsed;
     }
