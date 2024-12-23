@@ -3,6 +3,7 @@
 
 #include <sys/time.h>
 #include <pthread.h>
+#include <stdio.h>
 #include "queue.h"
 #include "common.h"
 #include "utils.h"
@@ -23,7 +24,7 @@ void trim_spaces(char* str);
 void update_min_max_sum_times(long long int job_time_elapsed);
 void* worker_thread(void* arg);
 ptr_threads_args* create_worker_threads(int num_threads);
-void destroy_threads(pthread_t* threads);
+void destroy_threads(pthread_t* threads, int num_threads);
 
 #endif
 

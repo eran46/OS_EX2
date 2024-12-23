@@ -24,7 +24,7 @@ dispatcher.o: dispatcher.c dispatcher.h worker.h utils.h common.h queue.h
 common.o: common.c common.h queue.h
 	$(CC) $(CFLAGS) -c common.c -o common.o
 	
-queue.o: queue.c queue.h
+queue.o: queue.c queue.h common.h
 	$(CC) $(CFLAGS) -c queue.c -o queue.o
 
 clean:

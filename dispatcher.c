@@ -3,7 +3,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
+void dispatcher_done(){
+	pthread_mutex_lock(&queue.lock);
+	dispatcher_done_flag = 1;
+	pthread_cond_broadcast(&queue.cond_nonempty); // wake up all sleeping threads.
+	pthread_mutex_unlock(&queue.lock);
+}
 
 // main thread wait until queue is empty
 void dispatcher_wait() {
@@ -18,6 +25,7 @@ void dispatcher_wait() {
 
 // parse each line and execute the command
 void parse_line(char *line) {
+    printf("%s\n",line);
     if (strncmp(line, "dispatcher", 10) == 0) {
         // dispatcher command
         char* token;
@@ -35,10 +43,11 @@ void parse_line(char *line) {
     }
     else if(strncmp(line, "worker", 6) == 0) {
         // worker job
-        print_general("Worker job: %s\n", line);
+        print_general("queueing Worker job\n");
         enqueue(&queue, line);
     }
     else{
+    	printf("%s\n",line);
     	print_error("Unknown entity job assignment");
     }
 }
@@ -58,7 +67,7 @@ void parse_cmdfile(FILE* file) {
     	    	print_error("dispatcher log failed to open");
     	    }
     	    struct timeval current_time;
-    	    gettimeofday(&program_end_time, NULL);
+    	    gettimeofday(&current_time, NULL);
     	    long long int elapsed_time = get_elapsed_time_in_ms(current_time);
     	    fprintf(dispatcher_log, "TIME %lld: read cmd line: %s\n", elapsed_time, line);
     	    fclose(dispatcher_log);
@@ -96,11 +105,12 @@ void parse_cmdfile(FILE* file) {
 void dispatcher(FILE* file){
     // open dispatcher log
     if(log_enabled == 1){
-        init_dispatcher_log()
+        init_dispatcher_log();
     }
     
     // parse command file
     parse_cmdfile(file);
-    dispatcher_wait(); // wait for all working threads to finish
+    dispatcher_done(); // update dispatcher_done_flag=1 and wake up all sleeping threads
+    dispatcher_wait(); // wait for all active threads to finish
 }
 

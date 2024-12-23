@@ -1,0 +1,41 @@
+TIME 12: read cmd line: dispatc
+TIME 14: read cmd line: her_msl
+TIME 14: read cmd line: eep 200
+TIME 14: read cmd line: 0;
+TIME 14: read cmd line: dispatc
+TIME 14: read cmd line: her_wai
+TIME 14: read cmd line: t;
+TIME 14: read cmd line: dispatc
+TIME 14: read cmd line: her_wai
+TIME 14: read cmd line: t;
+TIME 14: read cmd line: worker 
+TIME 14: read cmd line: msleep 
+TIME 14: read cmd line: 6000;
+TIME 14: read cmd line: worker 
+TIME 15: read cmd line: msleep 
+TIME 15: read cmd line: 6000;
+TIME 15: read cmd line: worker 
+TIME 15: read cmd line: msleep 
+TIME 15: read cmd line: 6000;
+TIME 15: read cmd line: worker 
+TIME 15: read cmd line: msleep 
+TIME 15: read cmd line: 6000;
+TIME 15: read cmd line: worker 
+TIME 16: read cmd line: msleep 
+TIME 16: read cmd line: 6000;
+TIME 16: read cmd line: dispatc
+TIME 16: read cmd line: her_wai
+TIME 16: read cmd line: t;
+TIME 16: read cmd line: worker 
+TIME 16: read cmd line: increme
+TIME 16: read cmd line: nt 0   
+TIME 16: read cmd line: ;     i
+TIME 16: read cmd line: ncremen
+TIME 16: read cmd line: t 3; de
+TIME 16: read cmd line: crement
+TIME 17: read cmd line:  1;decr
+TIME 17: read cmd line: ement2
+TIME 17: read cmd line: 
+TIME 17: read cmd line: dispatc
+TIME 17: read cmd line: her_wai
+TIME 17: read cmd line: t;

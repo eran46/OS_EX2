@@ -1,7 +1,11 @@
-dispatcher_msleep 5000;
+dispatcher_msleep 2000;
 dispatcher_wait;
-worker msleep 5000; increment 2; decrement 1;
 dispatcher_wait;
-worker repeat 2;increment 1; msleep 1000;
-worker                               decrement 2;
-dispatcher_msleep 5000;
+worker msleep 6000;
+worker msleep 6000;
+worker msleep 6000;
+worker msleep 6000;
+worker msleep 6000;
+dispatcher_wait;
+worker increment 0   ;     increment 3; decrement 1;decrement2
+dispatcher_wait;

@@ -1,4 +1,5 @@
 #include "queue.h"
+#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -40,7 +41,13 @@ void enqueue(TaskQueue* queue, const char* job_line) {
 
 Node* dequeue(TaskQueue* queue) {
     pthread_mutex_lock(&queue->lock);
-    while (queue->count == 0) {
+    while (queue->count == 0) { // if the queue is empty
+    	if(dispatcher_done_flag == 1){ 
+    		// on wakeup if dispatcher done and queue empty return NULL
+    		pthread_mutex_unlock(&queue->lock);
+    		return NULL;
+    	}
+    	// thread will sleep until signal or broadcast  
         pthread_cond_wait(&queue->cond_nonempty, &queue->lock);
     }
     Node* temp = queue->front;
