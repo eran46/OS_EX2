@@ -15,10 +15,10 @@ void print_error(char* err) {
 }
 
 // mode: -1 decrement, 1 increment
-void* active_threads_counter(void* arg) { // void* arg explained in docstring
+void* active_threads_counter(int mode) { 
 	pthread_mutex_lock(&mutex);
 	// cast void* arg to int* and access value.
-	switch(*(int*)arg) {
+	switch(mode) {
 	case (1):
 		active_threads++;
 	case (-1):

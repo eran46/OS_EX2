@@ -4,20 +4,9 @@
 #include "common.h"
 
 /**
- * @brief increment and decrements global variable active_threads (common.c).
- * 
- * mode=1 - increment active_threads,
- * mode=-1 - decrement active_threads,
- * uses mutex for thread safety.
- * 
- * @param arg void* Pointer, it is a precondition inorder to use
- * the function in the creation routine.
- * example-
- * int temp = 1;
- * pthread_create(&thread, NULL, active_threads_counter, (void*)&temp);
- * - creates Thread thread, calls function threads_counter() with arg void* temp
+ //rewrite
  */
-void* active_threads_counter(void* arg);
+void* active_threads_counter(int arg);
 
 /**
  * @brief convert numerical string to integer int.
