@@ -59,7 +59,6 @@ void* worker_thread(ThreadArgs* arg) {
     ThreadArgs* args = arg;
     TaskQueue* queue = args->queue;
     int thread_id = args->thread_id;
-    struct timeval start_time = args->start_time;
     FILE* logfile = NULL;
     if (log_enabled == 1) {
         char filename[20];
@@ -73,6 +72,9 @@ void* worker_thread(ThreadArgs* arg) {
 
     while (1) {
         Node* task_node = dequeue(queue);
+        struct timeval start_time = args->start_time;
+        jobs_count ++;
+   
         if (task_node == NULL) {
             continue; // Exit loop if no tasks are available
         }
@@ -113,18 +115,18 @@ void* worker_thread(ThreadArgs* arg) {
 
 	}else if (strncmp(task_node->job_line, "repeat", 6) == 0) {
     		int repeat_count;
-    		// Attempt to extract the repeat count from the job line
+    		// attempt to extract the repeat count from the job line
     		if (sscanf(task_node->job_line, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
-        		fprintf(stderr, "Invalid or non-positive repeat count\n");
+        		fprintf(stderr, "invalid repeat command or non-positive repeat count\n");
         		free(task_node);
         		continue;
     		}
 
-    		// Find the job part of the repeat line (after the first space)
+    		// find the job part of the repeat line (after the first space)
     		char* job = strchr(task_node->job_line, ';');
     		if (job) {
-        		job++; // Move past the semicolon to the job description
-        		// Repeat the task based on the repeat count
+        		job++; // move past the semicolon to the job description
+        		// repeat the task based on the repeat count
         		for (int i = 0; i < repeat_count; i++) {
             			if (strncmp(job, "increment", 9) == 0) {
                 			char counter_file[256];
@@ -150,6 +152,8 @@ void* worker_thread(ThreadArgs* arg) {
             		}
         		}
     		}
+    		// job finished
+    		if (
 	}
        	 else {
             if (log_enabled == 1) {
