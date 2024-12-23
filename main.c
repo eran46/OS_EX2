@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     init_counter_files(num_counters);
     
     // initialize threads
-    ptr_threads_args* save_ptr = create_worker_threads(int num_threads);
+    ptr_threads_args* save_ptr = create_worker_threads(num_threads);
     
     // dispatcher
     FILE* cmdfile = fopen(argv[1], "r");

@@ -2,6 +2,7 @@
 #define QUEUE_H
 
 #include <pthread.h>
+#include <sys/time.h>
 
 typedef struct Node {
     char job_line[1024];

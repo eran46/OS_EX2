@@ -9,10 +9,6 @@
 
 pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex to protect file access
 
-void msleep(int milliseconds) {
-    usleep(milliseconds * 1000); // Convert milliseconds to microseconds
-}
-
 void increment(const char* filename) {
     pthread_mutex_lock(&file_mutex);
     FILE* file = fopen(filename, "r+");
@@ -66,7 +62,7 @@ void trim_spaces(char* str) {
     *(end + 1) = '\0';
 }
 
-void update_min_max_sum_times(job_time_elapsed){
+void update_min_max_sum_times(long long int job_time_elapsed){
     if(job_time_elapsed >= jobs_time_max){
     	jobs_time_max = job_time_elapsed;
     }
