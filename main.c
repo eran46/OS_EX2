@@ -10,6 +10,7 @@
 #include "common.h"
 
 
+
 // global task queue object
 TaskQueue queue;
 pthread_mutex_t mutex;
@@ -41,7 +42,7 @@ int main(int argc, char *argv[]) {
     init_counter_files(num_counters);
     
     // initialize threads
-    create_worker_threads(queue, struct timeval start_time, int num_threads)
+    ptr_threads_args* save_ptr = create_worker_threads(int num_threads);
     
     // dispatcher
     FILE* cmdfile = fopen(argv[1], "r");
@@ -50,7 +51,8 @@ int main(int argc, char *argv[]) {
         // action? cleanup before exit?
     }
     dispatcher(cmdfile);
-    dispatcher_wait(); // wait for all working threads to finish
+    destroy_threads(save_ptr->threads);
+    
     
     // -------------> statistics output
     struct timeval program_end_time; // get program end time
@@ -60,6 +62,10 @@ int main(int argc, char *argv[]) {
     
     
     // -------------> cleanup
+    // free dynamic memmory
+    free(save_ptr->threads);
+    free(save_ptr->args);
+    free(save_ptr);
     
     // close all files
     

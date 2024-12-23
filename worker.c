@@ -54,10 +54,24 @@ void logfile_out(FILE* logfile, Node* task_node, struct timeval start_time) {
     fflush(logfile);
 }
 
+// Function to trim leading and trailing spaces
+void trim_spaces(char* str) {
+    char* end;
 
-void* worker_thread(ThreadArgs* arg) {
-    ThreadArgs* args = arg;
-    TaskQueue* queue = args->queue;
+    // Trim leading spaces
+    while (isspace((unsigned char)*str)) str++;
+
+    // Trim trailing spaces
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+
+    // Write new null terminator
+    *(end + 1) = '\0';
+}
+
+// arg = args[i]
+void* worker_thread(void* arg) {
+    ThreadArgs* args = (ThreadArgs*)arg;
     int thread_id = args->thread_id;
     FILE* logfile = NULL;
     if (log_enabled == 1) {
@@ -66,17 +80,15 @@ void* worker_thread(ThreadArgs* arg) {
         logfile = fopen(filename, "w");
         if (logfile == NULL) {
             perror("Failed to open log file"); // ???
-            pthread_exit(NULL); // ??
+            pthread_exit(NULL); // ???
         }
     }
 
-    while (1) {
+    while (task_node != NULL && dispatcher_done_flag == 1) {
         Node* task_node = dequeue(queue);
-        struct timeval start_time = args->start_time;
-        jobs_count ++;
    
         if (task_node == NULL) {
-            continue; // Exit loop if no tasks are available
+            continue; // if queue empty, keep checking
         }
 	
         if (task_node->job_line == NULL || strlen(task_node->job_line) == 0) {
@@ -85,110 +97,106 @@ void* worker_thread(ThreadArgs* arg) {
         }
         
         // ----------> continue if thread has "good" job
-
-        if (log_enabled == 1) {
-            long long time_ms_start = elapsed_time_ms(start_time);
+	struct timeval job_start_time;
+	gettimeofday(&job_start_time, NULL);
+        jobs_count ++;
+	active_threads_counter(1);
+	
+        if (log_enabled == 1) { // function?
+            long long time_ms_start = elapsed_time_ms(program_start_time);
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
         }
+        char* command = strtok(task_node->job_line,";");
+        while(command != NULL){
+        	trim_spaces(command);
+		if (strncmp(command, "msleep", 6) == 0) {
+		    int ms;
+		    sscanf(command, "msleep %d", &ms);
+		    msleep(ms);
 
 
-        if (strncmp(task_node->job_line, "msleep", 6) == 0) {
-            int ms;
-            sscanf(task_node->job_line, "msleep %d", &ms);
-            msleep(ms);
-            if (log_enabled == 1) logfile_out(logfile, task_node, start_time);
+		} else if (strncmp(command, "increment", 9) == 0) {
+		    char counter_file[256];
+		    sscanf(command, "increment %s", counter_file);
+		    increment(counter_file);
 
 
-        } else if (strncmp(task_node->job_line, "increment", 9) == 0) {
-            char counter_file[256];
-            sscanf(task_node->job_line, "increment %s", counter_file);
-            increment(counter_file);
-            if (log_enabled == 1) logfile_out(logfile, task_node, start_time);
+		} else if (strncmp(command, "decrement", 9) == 0) {
+		    char counter_file[256];
+		    sscanf(command, "decrement %s", counter_file);
+		    decrement(counter_file);
 
-
-        } else if (strncmp(task_node->job_line, "decrement", 9) == 0) {
-            char counter_file[256];
-            sscanf(task_node->job_line, "decrement %s", counter_file);
-            decrement(counter_file);
-            if (log_enabled == 1) logfile_out(logfile, task_node, start_time);
-
-	}else if (strncmp(task_node->job_line, "repeat", 6) == 0) {
-    		int repeat_count;
-    		// attempt to extract the repeat count from the job line
-    		if (sscanf(task_node->job_line, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
-        		fprintf(stderr, "invalid repeat command or non-positive repeat count\n");
-        		free(task_node);
-        		continue;
+		}else if (strncmp(command, "repeat", 6) == 0) {
+	    		int repeat_count;
+	    		// attempt to extract the repeat count from the job line
+	    		if (sscanf(command, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
+				fprintf(stderr, "invalid repeat command or non-positive repeat count\n");
+				free(task_node);
+				continue;
+	    		}
+// ...;...;...; repeat 5   ;command1;command2
+	    		// find the job part of the repeat line (after the first space)
+	    		char* job = strchr(task_node->job_line, ';');
+	    		if (job) {
+				job++; // move past the semicolon to the job description
+				// repeat the task based on the repeat count
+				for (int i = 0; i < repeat_count; i++) {
+		    			if (strncmp(job, "increment", 9) == 0) {
+		        			char counter_file[256];
+		        			sscanf(job, "increment %s", counter_file);
+		        			increment(counter_file);
+		    			} else if (strncmp(job, "decrement", 9) == 0) {
+		        			char counter_file[256];
+		        			sscanf(job, "decrement %s", counter_file);
+		        			decrement(counter_file);
+		    			} else if (strncmp(job, "msleep", 6) == 0) {
+		        			int ms;
+		        			sscanf(job, "msleep %d", &ms);
+		        			msleep(ms);
+		    			}
+				}
+	    		}
     		}
-
-    		// find the job part of the repeat line (after the first space)
-    		char* job = strchr(task_node->job_line, ';');
-    		if (job) {
-        		job++; // move past the semicolon to the job description
-        		// repeat the task based on the repeat count
-        		for (int i = 0; i < repeat_count; i++) {
-            			if (strncmp(job, "increment", 9) == 0) {
-                			char counter_file[256];
-                			sscanf(job, "increment %s", counter_file);
-                			increment(counter_file);
-            			} else if (strncmp(job, "decrement", 9) == 0) {
-                			char counter_file[256];
-                			sscanf(job, "decrement %s", counter_file);
-                			decrement(counter_file);
-            			} else if (strncmp(job, "msleep", 6) == 0) {
-                			int ms;
-                			sscanf(job, "msleep %d", &ms);
-                			msleep(ms);
-            			} else {
-                		// Handle unrecognized jobs (optional)
-                		fprintf(stderr, "Unknown job in repeat: %s\n", job);
-            			}
-
-            		// Log the repeated task if logging is enabled
-            		if (log_enabled == 1) {
-                	fprintf(logfile, "TIME %lld: REPEAT job %s\n", elapsed_time_ms(start_time), job);
-                	fflush(logfile);
-            		}
-        		}
-    		}
-    		// job finished
-    		if (
+    		command = strtok(NULL, ";");
 	}
-       	 else {
-            if (log_enabled == 1) {
-                fprintf(logfile, "Unknown job: %s\n", task_node->job_line);
-                fflush(logfile);
-            }
-        }
+	
+	// finished job
+	if (log_enabled == 1) {
+                	logfile_out(logfile, task_node, program_start_time)
+	}
+            		
         free(task_node);
     }
 
     if (log_enabled == 1) {
         fclose(logfile);
     }
-    return NULL;
+    active_threads_counter(-1);
+    return NULL; // return NULL finishes the thread
 }
 
 // ??? - added argument num_threads
-void create_worker_threads(TaskQueue* queue, struct timeval start_time, int num_threads) {
+ptr_threads_args* create_worker_threads(int num_threads) {
+    ptr_threads_args* ptr_save = (ptr_threads_args*)malloc(sizeof(ptr_threads_args));
     pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t)*num_threads); // dynamic array of threads
     ThreadArgs* args = (ThreadArgs*)malloc(sizeof(ThreadArgs)); // holds threads queue, hw2 start time and 
-
+    ptr_save->args = args;
+    ptr_save->threads = threads;
     for (int i = 0; i < num_threads; i++) {
-        args[i].queue = queue;
-        args[i].thread_id = i + 1;
-        args[i].start_time = start_time;
+        args[i].thread_id = i;
         if (pthread_create(&threads[i], NULL, worker_thread, &args[i]) != 0) {
             perror("Failed to create worker thread"); // ???
             exit(EXIT_FAILURE); // ???
         }
     }
     
-    for (int i = 0; i < num_threads; i++) {
-        pthread_join(threads[i], NULL); // ???
-    }
+    return ptr_save;
     
-    worker_thread(args);
+}
+void destroy_threads(pthread_t* threads){
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL); // wait for 
+    }
 }
 

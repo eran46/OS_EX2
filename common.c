@@ -1,5 +1,6 @@
 #include "common.h"
 
+char dispatcher_done_flag = 0;
 
 int active_threads = 0;
 

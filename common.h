@@ -16,6 +16,7 @@ extern pthread_mutex_t mutex; // main.c
 extern pthread_cond_t cond; // main.c
 extern struct timeval program_start_time; // main.c
 
+extern char dispatcher_done_flag; // common.c
 extern int active_threads; // common.c
 extern int jobs_count; // common.c
 extern long long int jobs_time_sum; // common.c

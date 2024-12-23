@@ -81,9 +81,9 @@ void parse_cmdfile(FILE* file) {
         parse_line(line);
     }
     
-    if(log_enabled == 1){
-        
-    }
+    dispatcher_done_flag = 1;
+    
+   
 
     fclose(file);
 }
@@ -96,5 +96,6 @@ void dispatcher(FILE* file){
     
     // parse command file
     parse_cmdfile(file);
+    dispatcher_wait(); // wait for all working threads to finish
 }
 
