@@ -80,7 +80,7 @@ void* worker_thread(void* arg) {
     int thread_id = args->thread_id;
     
     print_general("thread that started working:");
-    printf("%d",thread_id);
+    printf("%d\n",thread_id);
     
     
     FILE* logfile = NULL;
@@ -100,7 +100,7 @@ void* worker_thread(void* arg) {
     	Node* task_node = dequeue(&queue); // dequeue has cond locking on threads, waits
     	
     	print_general("thread that just took a job from the queue");
-    	printf("%d",thread_id);
+    	printf("%d\n",thread_id);
     	
     	// task_node = NULL only when thread was asleep and wokeup to empty queue
         if (task_node == NULL) {
@@ -125,7 +125,7 @@ void* worker_thread(void* arg) {
 	    print_error("allocate memory for copy of string in worker");
 	}
 	
-        if (log_enabled == 1) { // function?
+        if (log_enabled == 1) {
             long long time_ms_start = elapsed_time_ms(program_start_time);
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
@@ -134,11 +134,13 @@ void* worker_thread(void* arg) {
         char* command = strtok(cpy_line,";");
         while(command != NULL){
         	trim_spaces(command);
+        	printf("%s\n", command);
 		if (strncmp(command, "msleep", 6) == 0) {
-		    int ms;
-		    sscanf(command, "msleep %d", &ms);
+		    long ms;
+		    sscanf(command, "msleep %ld", &ms);
 		    
 		    print_general("thread sleeping");
+		    printf("%ld seconds\n", ms);
 		    msleep(ms);
 		    print_general("thread finished sleeping");
 

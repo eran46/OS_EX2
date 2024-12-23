@@ -35,7 +35,7 @@ void enqueue(TaskQueue* queue, const char* job_line) {
         queue->rear = new_node;
     }
     queue->count++;
-    pthread_cond_broadcast(&queue->cond_nonempty);
+    pthread_cond_signal(&queue->cond_nonempty);
     pthread_mutex_unlock(&queue->lock);
 }
 
