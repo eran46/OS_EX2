@@ -54,7 +54,6 @@ void init_counter_files(int num_counters) {
 		}
 		else{
 			fprintf(f, "%d", 0); // NO NEW LINE
-			print_general("count file initialized\n");
 		}
 		fclose(f);
 	}
