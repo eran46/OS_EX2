@@ -88,17 +88,20 @@ void* worker_thread(void* arg) {
             fflush(logfile);
         }
 
+
         if (strncmp(task_node->job_line, "msleep", 6) == 0) {
             int ms;
             sscanf(task_node->job_line, "msleep %d", &ms);
             msleep(ms);
             if (log_enable == 1) logfile_out(logfile, task_node, start_time);
 
+
         } else if (strncmp(task_node->job_line, "increment", 9) == 0) {
             char counter_file[256];
             sscanf(task_node->job_line, "increment %s", counter_file);
             increment(counter_file);
             if (log_enable == 1) logfile_out(logfile, task_node, start_time);
+
 
         } else if (strncmp(task_node->job_line, "decrement", 9) == 0) {
             char counter_file[256];

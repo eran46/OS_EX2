@@ -10,8 +10,8 @@ typedef struct Node {
     char job_line[1024];
     struct Node* next;
 } Node;
-
-typedef struct {   
+ 
+typedef struct {
     Node* front;
     Node* rear;
     int count;
@@ -91,4 +91,3 @@ typedef struct { //structure to pass multiple arguments to each worker thread
     int thread_id;
     struct timeval start_time;
 } ThreadArgs;
-
