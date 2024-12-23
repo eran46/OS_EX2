@@ -1,10 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#ifndef QUEUE_H
-#define QUEUE_H
 #include "queue.h"
-#endif
 
 #include <pthread.h>
 #include <sys/time.h>
