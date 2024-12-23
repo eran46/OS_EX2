@@ -17,11 +17,17 @@ struct timeval program_start_time;
 
 // arguments: cmdfile.txt num_threads num_counters log_enabled
 int main(int argc, char *argv[]) {
+
+    print_general("DEBUG1");
+    
     // get program start time
     gettimeofday(&program_start_time, NULL);
 
     // initialize queue
+    queue = (TaskQueue*)malloc(sizeof(TaskQueue));
     init_queue(queue);
+    
+    print_general("DEBUG2");
     
     // get program arguments
     if (argc != CMD_ARGS_NUM + 1) {
@@ -31,7 +37,7 @@ int main(int argc, char *argv[]) {
     int num_threads = str_to_int(argv[2]); // max 4096
     int num_counters = str_to_int(argv[3]); // max 100
     log_enabled = str_to_int(argv[4]);
-    
+    print_general("DEBUG1");
     // initialize mutex and cond
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&cond, NULL);
