@@ -25,7 +25,6 @@ void dispatcher_wait() {
 
 // parse each line and execute the command
 void parse_line(char *line) {
-    printf("parseline1 %s\n",line);
     if (strncmp(line, "dispatcher", 10) == 0) {
         // dispatcher command
         char* token;
@@ -47,7 +46,6 @@ void parse_line(char *line) {
         enqueue(&queue, line);
     }
     else{
-    	printf("parseline2 %s\n",line);
     	print_error("Unknown entity job assignment");
     }
 }
@@ -59,9 +57,8 @@ void parse_cmdfile(FILE* file) {
     	print_error("allocating line string");
     }
     while (fgets(line, MAX_LINE_LENGTH, file)) {
-    	printf("parsecmd1 %s\n",line);
+
     	line[strcspn(line, "\n")] = 0; // Remove trailing newline
-    	printf("parsecmd2 %s\n",line);
     	if(log_enabled == 1){
     	    FILE* dispatcher_log = fopen("dispatcher.txt", "a");
     	    if(dispatcher_log == NULL){
@@ -81,20 +78,14 @@ void parse_cmdfile(FILE* file) {
             start++;
         }
         
-        printf("parsecmd3 %s\n",line);
-        
         // Move the rest of the string to the front
         memmove(line, line + start, strlen(line) - start + 1);  // Move characters forward
-	
-	printf("parsecmd4 %s\n",line);
 	
         // Remove trailing spaces
         line[strcspn(line, "\n")] = 0;
         while (isspace(line[strlen(line) - 1])) {
             line[strlen(line) - 1] = 0;  // Trim trailing spaces
         }
-        
-        printf("parsecmd5 %s\n",line);
 
 	// Skip empty lines
         if (strlen(line) == 0) { 

@@ -78,6 +78,11 @@ void update_min_max_sum_times(long long int job_time_elapsed){
 void* worker_thread(void* arg) {
     ThreadArgs* args = (ThreadArgs*)arg;
     int thread_id = args->thread_id;
+    
+    print_general("thread that started working:");
+    printf("%d",thread_id);
+    
+    
     FILE* logfile = NULL;
     if (log_enabled == 1) {
         char filename[20];
@@ -93,7 +98,10 @@ void* worker_thread(void* arg) {
     while (1) {
     	// first dequeue
     	Node* task_node = dequeue(&queue); // dequeue has cond locking on threads, waits
-    
+    	
+    	print_general("thread that just took a job from the queue");
+    	printf("%d",thread_id);
+    	
     	// task_node = NULL only when thread was asleep and wokeup to empty queue
         if (task_node == NULL) {
 	    break;
@@ -109,7 +117,7 @@ void* worker_thread(void* arg) {
 	struct timeval job_start_time;
 	gettimeofday(&job_start_time, NULL);
         jobs_count ++;
-	active_threads_counter(1);
+	active_threads_counter((int)1);
 	
 	// hard copy string for token and trailing/leading space removal
 	char* cpy_line = malloc(strlen(task_node->job_line) + 1); 
@@ -129,8 +137,10 @@ void* worker_thread(void* arg) {
 		if (strncmp(command, "msleep", 6) == 0) {
 		    int ms;
 		    sscanf(command, "msleep %d", &ms);
+		    
+		    print_general("thread sleeping");
 		    msleep(ms);
-
+		    print_general("thread finished sleeping");
 
 		} else if (strncmp(command, "increment", 9) == 0) {
 		    char counter_file[256];
@@ -201,7 +211,7 @@ void* worker_thread(void* arg) {
     if (log_enabled == 1) {
         fclose(logfile);
     }
-    active_threads_counter(-1);
+    active_threads_counter((int)-1);
     return NULL; // return NULL finishes the thread
 }
 

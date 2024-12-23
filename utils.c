@@ -20,11 +20,14 @@ void* active_threads_counter(int mode) {
 	switch(mode) {
 	case (1):
 		active_threads++;
+		break;
 	case (-1):
 		active_threads--;
+		break;
 	default:
 		pthread_mutex_unlock(&mutex);
         	print_general("invalid mode value, ignored.\n");
+        	break;
 	}
 	pthread_mutex_unlock(&mutex);
 	return NULL;
