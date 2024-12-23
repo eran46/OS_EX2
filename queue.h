@@ -1,6 +1,5 @@
 #ifndef QUEUE_H
 #define QUEUE_H
-
 #include <pthread.h>
 #include <sys/time.h>
 
@@ -26,5 +25,6 @@ Node* dequeue(TaskQueue* queue);
 void destroy_queue(TaskQueue* queue);
 
 long long int elapsed_time_ms(struct timeval start_time);
+
 
 #endif

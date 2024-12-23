@@ -74,6 +74,7 @@ void destroy_queue(TaskQueue* queue) {
 }
 
 long long int elapsed_time_ms(struct timeval start_time) { //time the task in the queue
+
     struct timeval current_time;
     gettimeofday(&current_time, NULL);
     long long seconds = current_time.tv_sec - start_time.tv_sec;
