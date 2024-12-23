@@ -18,6 +18,11 @@ void print_error(char* err) {
 void* active_threads_counter(int mode) { 
 	pthread_mutex_lock(&mutex);
 	// cast void* arg to int* and access value.
+	if (mode != 1 && mode != -1) {
+        	pthread_mutex_unlock(&mutex);
+        	fprintf("invalid mode value, ignored.\n", mode);
+        	return NULL;
+        	
 	switch(mode) {
 	case (1):
 		active_threads++;
