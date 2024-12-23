@@ -4,25 +4,11 @@
 #include <sys/time.h>
 #include <pthread.h>
 
-#ifndef QUEUE_H
-#define QUEUE_H
 #include "queue.h"
-#endif
-
-#ifndef DISPATCHER_H
-#define DISPATCHER_H
 #include "dispatcher.h"
-#endif
-
-#ifndef UTILS_H
-#define UTILS_H
 #include "utils.h"
-#endif
-
-#ifndef COMMON_H
-#define COMMON_H
 #include "common.h"
-#endif
+
 
 // global task queue object
 TaskQueue queue;
@@ -54,7 +40,8 @@ int main(int argc, char *argv[]) {
     // initialize counter files
     init_counter_files(num_counters);
     
-    // initialize threads (and start checking queue)
+    // initialize threads
+    create_worker_threads(queue, struct timeval start_time, int num_threads)
     
     // dispatcher
     FILE* cmdfile = fopen(argv[1], "r");

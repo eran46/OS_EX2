@@ -1,3 +1,4 @@
+#include "queue.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -5,19 +6,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-typedef struct Node {
-    int task_id;         //distinguish it from other tasks- for tracking the lifecycle of a task
-    char job_line[1024];
-    struct Node* next;
-} Node;
- 
-typedef struct {
-    Node* front;
-    Node* rear;
-    int count;
-    pthread_mutex_t lock;
-    pthread_cond_t cond_nonempty;
-} TaskQueue;    //create queue of threads
 
 void init_queue(TaskQueue* queue) {
     queue->front = queue->rear = NULL;
@@ -26,15 +14,15 @@ void init_queue(TaskQueue* queue) {
     pthread_cond_init(&queue->cond_nonempty, NULL);
 }
 
-void enqueue(TaskQueue* queue, int task_id, const char* job_line) {
+
+void enqueue(TaskQueue* queue, const char* job_line) {
     pthread_mutex_lock(&queue->lock);
     Node* new_node = (Node*)malloc(sizeof(Node));
     if (new_node == NULL) {
-        perror("Failed to allocate memory for new node");
+        perror("Failed to allocate memory for new node"); // ???
         pthread_mutex_unlock(&queue->lock);
         return;
     }
-    new_node->task_id = task_id;
     strncpy(new_node->job_line, job_line, sizeof(new_node->job_line) - 1);
     new_node->job_line[sizeof(new_node->job_line) - 1] = '\0';
     new_node->next = NULL;
@@ -85,9 +73,3 @@ long long elapsed_time_ms(struct timeval start_time) { //time the task in the qu
     long long microseconds = current_time.tv_usec - start_time.tv_usec;
     return (seconds * 1000LL) + (microseconds / 1000);
 }
-
-typedef struct { //structure to pass multiple arguments to each worker thread
-    TaskQueue* queue;
-    int thread_id;
-    struct timeval start_time;
-} ThreadArgs;
