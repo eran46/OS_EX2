@@ -5,9 +5,6 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include "worker.h"
-#include "queue.h"
-#include "common.h"
-#include "utils.h"
 
 
 pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex to protect file access
@@ -69,6 +66,16 @@ void trim_spaces(char* str) {
     *(end + 1) = '\0';
 }
 
+void update_min_max_sum_times(job_time_elapsed){
+    if(job_time_elapsed >= jobs_time_max){
+    	jobs_time_max = job_time_elapsed;
+    }
+    if(job_time_elapsed <= jobs_time_min){
+    	jobs_time_min = job_time_elapsed;
+    }
+    jobs_time_sum += job_time_elapsed;
+}
+
 // arg = args[i]
 void* worker_thread(void* arg) {
     ThreadArgs* args = (ThreadArgs*)arg;
@@ -104,7 +111,7 @@ void* worker_thread(void* arg) {
 	
 	// hard copy string for token and trailing/leading space removal
 	char* cpy_line = malloc(strlen(task_node->job_line) + 1); 
-	if (copy == NULL) {
+	if (cpy_line == NULL) {
 	    print_error("allocate memory for copy of string in worker");
 	}
 	
@@ -113,6 +120,7 @@ void* worker_thread(void* arg) {
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
         }
+        // task_node->job_line
         char* command = strtok(cpy_line,";");
         while(command != NULL){
         	trim_spaces(command);
@@ -141,33 +149,45 @@ void* worker_thread(void* arg) {
 				free(task_node);
 				continue;
 	    		}
-	    		// ??? from here remember to use cpy_line
-	    		char* repeat_command = strchr(command, ';');
-	    		if (repeat_command) {
-				repeat_command++; // move past the semicolon to the job description
-				// repeat the task based on the repeat count
-				for (int i = 0; i < repeat_count; i++) {
-		    			if (strncmp(repeat_command, "increment", 9) == 0) {
-		        			char counter_file[256];
-		        			sscanf(repeat_command, "increment %s", counter_file);
-		        			increment(counter_file);
-		    			} else if (strncmp(repeat_command, "decrement", 9) == 0) {
-		        			char counter_file[256];
-		        			sscanf(repeat_command, "decrement %s", counter_file);
-		        			decrement(counter_file);
-		    			} else if (strncmp(repeat_command, "msleep", 6) == 0) {
-		        			int ms;
-		        			sscanf(repeat_command, "msleep %d", &ms);
-		        			msleep(ms);
-		    			}
-				}
+	    		char* repeat_commands = strchr(command, ';');
+	    		repeat_commands++; // start of commands to repeat
+	    		for (int i = 0; i < repeat_count; i++) {
+	    		    char* repeat_commands_cpy = (char*)malloc(strlen(repeat_commands)+1);
+	    		    if (repeat_commands_cpy == NULL) {
+			    	print_error("allocate memory for copy of commands to repeat  in worker");
+			    }	
+	    		    strcpy(repeat_commands_cpy, repeat_commands);
+	    		    shit_token = strtok(repeat_commands_cpy, ";");
+	    		    while(shit_token != NULL){
+	    		    	if (strncmp(repeat_command, "increment", 9) == 0) {
+	        			char counter_file[256];
+	        			sscanf(repeat_command, "increment %s", counter_file);
+	        			increment(counter_file);
+	    			} else if (strncmp(repeat_command, "decrement", 9) == 0) {
+	        			char counter_file[256];
+	        			sscanf(repeat_command, "decrement %s", counter_file);
+	        			decrement(counter_file);
+	    			} else if (strncmp(repeat_command, "msleep", 6) == 0) {
+	        			int ms;
+	        			sscanf(repeat_command, "msleep %d", &ms);
+	        			msleep(ms);
+	    			}
+	    			shit_token = strtok(NULL, ";");
+	    		    }
+	    		    free(repeat_commands_cpy)
+	    		    command = NULL;
+	    		    
 	    		}
+	    		continue; // if command was repeat, no need to continue
     		}
     		command = strtok(NULL, ";");
 	}
 	free(cpy_line);
 	
 	// finished job
+	long long int job_time_elapsed = elapsed_time_ms(job_start_time);
+	update_min_max_sum_times(job_time_elapsed);
+	
 	if (log_enabled == 1) {
         	logfile_out(logfile, task_node, program_start_time)
 	}

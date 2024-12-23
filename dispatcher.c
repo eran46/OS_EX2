@@ -50,6 +50,8 @@ void parse_cmdfile(FILE* file) {
     	print_error("allocating line string");
     }
     while (fgets(line, sizeof(line), file)) {
+    	line[strcspn(line, "\n")] = 0; // Remove trailing newline
+    	
     	if(log_enabled == 1){
     	    FILE* dispatcher_log = fopen("dispatcher.txt", "a");
     	    if(dispatcher_log == NULL){
@@ -70,7 +72,7 @@ void parse_cmdfile(FILE* file) {
         // Move the rest of the string to the front
         memmove(line, line + start, strlen(line) - start + 1);  // Move characters forward
 
-        // Remove trailing newline or spaces
+        // Remove trailing spaces
         line[strcspn(line, "\n")] = 0;
         while (isspace(line[strlen(line) - 1])) {
             line[strlen(line) - 1] = 0;  // Trim trailing spaces
