@@ -10,7 +10,7 @@
 #define MAX_CMD_LENGTH 256
 
 
-extern TaskQueue queue; // main.c
+extern TaskQueue* queue; // main.c
 extern pthread_mutex_t mutex; // main.c
 extern pthread_cond_t cond; // main.c
 extern struct timeval program_start_time; // main.c

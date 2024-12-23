@@ -97,7 +97,7 @@ void* worker_thread(void* arg) {
     
     while (1) {
     	// first dequeue
-    	Node* task_node = dequeue(&queue); // dequeue has cond locking on threads, waits
+    	Node* task_node = dequeue(queue); // dequeue has cond locking on threads, waits
     	
     	print_general("thread that just took a job from the queue");
     	printf("%d\n",thread_id);
@@ -205,9 +205,6 @@ void* worker_thread(void* arg) {
 	if (log_enabled == 1) {
         	logfile_out(logfile, task_node, program_start_time);
 	}  		
-        free(task_node);
-        
-        task_node = dequeue(&queue); 
     }
 
     if (log_enabled == 1) {

@@ -6,10 +6,10 @@
 #include <stdlib.h>
 
 void dispatcher_done(){
-	pthread_mutex_lock(&queue.lock);
+	pthread_mutex_lock(&queue->lock);
 	dispatcher_done_flag = 1;
-	pthread_cond_broadcast(&queue.cond_nonempty); // wake up all sleeping threads.
-	pthread_mutex_unlock(&queue.lock);
+	pthread_cond_broadcast(&queue->cond_nonempty); // wake up all sleeping threads.
+	pthread_mutex_unlock(&queue->lock);
 }
 
 // main thread wait until queue is empty
@@ -43,7 +43,7 @@ void parse_line(char *line) {
     else if(strncmp(line, "worker", 6) == 0) {
         // worker job
         print_general("queueing Worker job\n");
-        enqueue(&queue, line);
+        enqueue(queue, line);
     }
     else{
     	print_error("Unknown entity job assignment");

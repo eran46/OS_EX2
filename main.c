@@ -10,7 +10,7 @@
 #include "common.h"
 
 
-TaskQueue queue;
+TaskQueue* queue;
 pthread_mutex_t mutex;
 pthread_cond_t cond;
 struct timeval program_start_time;
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     gettimeofday(&program_start_time, NULL);
 
     // initialize queue
-    init_queue(&queue);
+    init_queue(queue);
     
     // get program arguments
     if (argc != CMD_ARGS_NUM + 1) {
