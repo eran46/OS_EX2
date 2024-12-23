@@ -1,5 +1,0 @@
-total running time: 33 milliseconds
-sum of jobs turnaround time: 8 milliseconds
-min job turnaround time: 0 milliseconds
-average job turnaround time: 2.000000 milliseconds
-max job turnaround time: 5 milliseconds

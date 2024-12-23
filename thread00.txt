@@ -1,2 +1,0 @@
-TIME 15: START job worker
-TIME 15: END job worker
