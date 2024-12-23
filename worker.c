@@ -102,12 +102,18 @@ void* worker_thread(void* arg) {
         jobs_count ++;
 	active_threads_counter(1);
 	
-        if (log_enabled == 1) { 
+	// hard copy string for token and trailing/leading space removal
+	char* cpy_line = malloc(strlen(task_node->job_line) + 1); 
+	if (copy == NULL) {
+	    print_error("allocate memory for copy of string in worker");
+	}
+	
+        if (log_enabled == 1) { // function?
             long long time_ms_start = elapsed_time_ms(program_start_time);
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
         }
-        char* command = strtok(task_node->job_line,";");
+        char* command = strtok(cpy_line,";");
         while(command != NULL){
         	trim_spaces(command);
 		if (strncmp(command, "msleep", 6) == 0) {
@@ -131,12 +137,11 @@ void* worker_thread(void* arg) {
 	    		int repeat_count;
 	    		// attempt to extract the repeat count from the job line
 	    		if (sscanf(command, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
-				fprintf(stderr,"invalid repeat command or non-positive repeat count\n");
+				fprintf(stderr, "invalid repeat command or non-positive repeat count\n"); // ???
+				free(task_node);
 				continue;
 	    		}
-	    		
-// ...;...;...; repeat 5   ;command1;command2
-	    		// find the job part of the repeat line (after the first space)
+	    		// ??? from here remember to use cpy_line
 	    		char* repeat_command = strchr(command, ';');
 	    		if (repeat_command) {
 				repeat_command++; // move past the semicolon to the job description
@@ -160,12 +165,13 @@ void* worker_thread(void* arg) {
     		}
     		command = strtok(NULL, ";");
 	}
+	free(cpy_line);
 	
 	// finished job
 	if (log_enabled == 1) {
-                	logfile_out(logfile, task_node, program_start_time)
+        	logfile_out(logfile, task_node, program_start_time)
 	}
-            		
+        free(task_node->job_line)    		
         free(task_node);
     }
 
@@ -179,8 +185,17 @@ void* worker_thread(void* arg) {
 // ??? - added argument num_threads
 ptr_threads_args* create_worker_threads(int num_threads) {
     ptr_threads_args* ptr_save = (ptr_threads_args*)malloc(sizeof(ptr_threads_args));
+    if(ptr_save == NULL){
+    	print_error("allocating ptr_save");
+    }
     pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t)*num_threads); // dynamic array of threads
+    if(threads == NULL){
+    	print_error("allocating threads array");
+    }
     ThreadArgs* args = (ThreadArgs*)malloc(sizeof(ThreadArgs)); // holds threads queue, hw2 start time and 
+    if(args == NULL){
+    	print_error("allocating threads arguments array");
+    }
     ptr_save->args = args;
     ptr_save->threads = threads;
     for (int i = 0; i < num_threads; i++) {

@@ -10,8 +10,6 @@
 #include "common.h"
 
 
-
-// global task queue object
 TaskQueue queue;
 pthread_mutex_t mutex;
 pthread_cond_t cond;

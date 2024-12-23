@@ -19,33 +19,36 @@ void dispatcher_wait() {
 // parse each line and execute the command
 void parse_line(char *line) {
     if (strncmp(line, "dispatcher", 10) == 0) {
-        // It's a dispatcher command
+        // dispatcher command
         char* token;
         if (strncmp(line + 11, "msleep", 6) == 0) {
-            // dispatcher msleep <x>
             token = strtok(line + 18, " ;");
             long sleep_time_ms = str_to_int(token);
             print_general("Dispatcher sleep for milliseconds");
             msleep(sleep_time_ms);
         } else if (strncmp(line + 11, "wait", 4) == 0) {
-            // dispatcher wait
             print_general("Dispatcher waiting for worker jobs to complete");
             dispatcher_wait();
         } else {
             print_error("Unknown dispatcher command");
         }
     }
-    else {
-        // It's a worker job
+    else if(strncmp(line, "worker", 6) == 0) {
+        // worker job
         print_general("Worker job: %s\n", line);
-        // Here, we would push the job to the work queue for the worker threads
-        enqueue(&queue, line); // TODO: check arguments
+        enqueue(&queue, line);
+    }
+    else{
+    	print_error("Unknown entity job assignment");
     }
 }
 
 // read the cmdfile.txt and parse each line
 void parse_cmdfile(FILE* file) {
-    char line[MAX_LINE_LENGTH];
+    char* line = (char*)malloc(sizeof(char)*MAX_LINE_LENGTH);
+    if(line == NULL){
+    	print_error("allocating line string");
+    }
     while (fgets(line, sizeof(line), file)) {
     	if(log_enabled == 1){
     	    FILE* dispatcher_log = fopen("dispatcher.txt", "a");
