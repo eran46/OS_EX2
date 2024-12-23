@@ -4,10 +4,10 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include "worker.h"
 #include "queue.h"
 #include "common.h"
 #include "utils.h"
-#define NUM_WORKERS num_threads
 
 
 pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex to protect file access
@@ -55,8 +55,8 @@ void logfile_out(FILE* logfile, Node* task_node, struct timeval start_time) {
 }
 
 
-void* worker_thread(void* arg) {
-    ThreadArgs* args = (ThreadArgs*)arg;
+void* worker_thread(ThreadArgs* arg) {
+    ThreadArgs* args = arg;
     TaskQueue* queue = args->queue;
     int thread_id = args->thread_id;
     struct timeval start_time = args->start_time;
@@ -166,22 +166,25 @@ void* worker_thread(void* arg) {
     return NULL;
 }
 
-void create_worker_threads(TaskQueue* queue, struct timeval start_time) {
-    pthread_t threads[NUM_WORKERS];
-    ThreadArgs args[NUM_WORKERS];
+// ??? - added argument num_threads
+void create_worker_threads(TaskQueue* queue, struct timeval start_time, int num_threads) {
+    pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t)*num_threads); // dynamic array of threads
+    ThreadArgs* args = (ThreadArgs*)malloc(sizeof(ThreadArgs)); // holds threads queue, hw2 start time and 
 
-    for (int i = 0; i < NUM_WORKERS; i++) {
+    for (int i = 0; i < num_threads; i++) {
         args[i].queue = queue;
         args[i].thread_id = i + 1;
         args[i].start_time = start_time;
         if (pthread_create(&threads[i], NULL, worker_thread, &args[i]) != 0) {
-            perror("Failed to create worker thread"); // ??
-            exit(EXIT_FAILURE); // ??
+            perror("Failed to create worker thread"); // ???
+            exit(EXIT_FAILURE); // ???
         }
     }
-
-    for (int i = 0; i < NUM_WORKERS; i++) {
-        pthread_join(threads[i], NULL);
+    
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL); // ???
     }
+    
+    worker_thread(args);
 }
 

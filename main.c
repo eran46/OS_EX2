@@ -40,7 +40,8 @@ int main(int argc, char *argv[]) {
     // initialize counter files
     init_counter_files(num_counters);
     
-    // initialize threads (and start checking queue)
+    // initialize threads
+    create_worker_threads(queue, struct timeval start_time, int num_threads)
     
     // dispatcher
     FILE* cmdfile = fopen(argv[1], "r");
