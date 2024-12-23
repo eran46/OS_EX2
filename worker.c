@@ -59,7 +59,6 @@ void* worker_thread(void* arg) {
     ThreadArgs* args = (ThreadArgs*)arg;
     TaskQueue* queue = args->queue;
     int thread_id = args->thread_id;
-    struct timeval start_time = args->start_time;
     FILE* logfile = NULL;
     if (log_enable == 1) {
         char filename[20];
@@ -73,8 +72,11 @@ void* worker_thread(void* arg) {
 
     while (1) {
         Node* task_node = dequeue(queue);
+        struct timeval start_time = args->start_time;
+        jobs_count ++;
+   
         if (task_node == NULL) {
-            break; // Exit loop if no tasks are available
+            continue; // exit loop if no tasks are available
         }
 
         if (task_node->job_line == NULL || strlen(task_node->job_line) == 0) {
@@ -111,18 +113,18 @@ void* worker_thread(void* arg) {
 
 	}else if (strncmp(task_node->job_line, "repeat", 6) == 0) {
     		int repeat_count;
-    		// Attempt to extract the repeat count from the job line
+    		// attempt to extract the repeat count from the job line
     		if (sscanf(task_node->job_line, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
-        		fprintf(stderr, "Invalid or non-positive repeat count\n");
+        		fprintf(stderr, "invalid repeat command or non-positive repeat count\n");
         		free(task_node);
         		continue;
     		}
 
-    		// Find the job part of the repeat line (after the first space)
+    		// find the job part of the repeat line (after the first space)
     		char* job = strchr(task_node->job_line, ';');
     		if (job) {
-        		job++; // Move past the semicolon to the job description
-        		// Repeat the task based on the repeat count
+        		job++; // move past the semicolon to the job description
+        		// repeat the task based on the repeat count
         		for (int i = 0; i < repeat_count; i++) {
             			if (strncmp(job, "increment", 9) == 0) {
                 			char counter_file[256];
@@ -136,28 +138,19 @@ void* worker_thread(void* arg) {
                 			int ms;
                 			sscanf(job, "msleep %d", &ms);
                 			msleep(ms);
-            			} else {
-                		// Handle unrecognized jobs (optional)
-                		fprintf(stderr, "Unknown job in repeat: %s\n", job);
-            			}
-
-            		// Log the repeated task if logging is enabled
+            			} 
+			}
+            		// log the repeated task if logging is enabled
             		if (log_enable == 1) {
                 	fprintf(logfile, "TIME %lld: REPEAT job %s\n", elapsed_time_ms(start_time), job);
                 	fflush(logfile);
             		}
         		}
     		}
+    		// job finished
+    		if (
 	}
-       	 else {
-            if (log_enable == 1) {
-                fprintf(logfile, "Unknown job: %s\n", task_node->job_line);
-                fflush(logfile);
-            }
-        }
-        free(task_node);
-    }
-
+    free(task_node);
     if (log_enable == 1) {
         fclose(logfile);
     }
@@ -167,7 +160,7 @@ void* worker_thread(void* arg) {
 void create_worker_threads(TaskQueue* queue, struct timeval start_time) {
     pthread_t threads[NUM_WORKERS];
     ThreadArgs args[NUM_WORKERS];
-
+    
     for (int i = 0; i < NUM_WORKERS; i++) {
         args[i].queue = queue;
         args[i].thread_id = i + 1;
