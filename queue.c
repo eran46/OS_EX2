@@ -48,6 +48,7 @@ Node* dequeue(TaskQueue* queue) {
     		return NULL;
     	}
     	// thread will sleep until signal or broadcast  
+    	printf("a thread is waiting for the queue to fill");
         pthread_cond_wait(&queue->cond_nonempty, &queue->lock);
     }
     Node* temp = queue->front;

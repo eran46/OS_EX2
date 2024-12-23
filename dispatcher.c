@@ -15,7 +15,7 @@ void dispatcher_done(){
 // main thread wait until queue is empty
 void dispatcher_wait() {
 	pthread_mutex_lock(&mutex);
-	while(active_threads > 0) {
+	while(active_threads > 0 || queue->count > 0) {
 		print_general("waiting for active == 0");
 		pthread_cond_wait(&cond, &mutex);
 	}

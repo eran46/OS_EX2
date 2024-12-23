@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
 
     // initialize queue
     init_queue(&queue);
-    print_general("initialized queue");
     
     // get program arguments
     if (argc != CMD_ARGS_NUM + 1) {
@@ -32,7 +31,6 @@ int main(int argc, char *argv[]) {
     int num_threads = str_to_int(argv[2]); // max 4096
     int num_counters = str_to_int(argv[3]); // max 100
     log_enabled = str_to_int(argv[4]);
-    print_general("program arguments read");
     
     // initialize mutex and cond
     pthread_mutex_init(&mutex, NULL);
@@ -40,7 +38,6 @@ int main(int argc, char *argv[]) {
     
     // initialize counter files
     init_counter_files(num_counters);
-    print_general("initialized all counter files");
     
     // initialize threads
     ptr_threads_args* save_ptr = create_worker_threads(num_threads);
