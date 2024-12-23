@@ -58,7 +58,7 @@ void parse_cmdfile(FILE* file) {
     if(line == NULL){
     	print_error("allocating line string");
     }
-    while (fgets(line, sizeof(line), file)) {
+    while (fgets(line, MAX_LINE_LENGTH, file)) {
     	printf("parsecmd1 %s\n",line);
     	line[strcspn(line, "\n")] = 0; // Remove trailing newline
     	printf("parsecmd2 %s\n",line);
