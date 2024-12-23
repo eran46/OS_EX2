@@ -202,7 +202,6 @@ void* worker_thread(void* arg) {
     return NULL; // return NULL finishes the thread
 }
 
-// ??? - added argument num_threads
 ptr_threads_args* create_worker_threads(int num_threads) {
     ptr_threads_args* ptr_save = (ptr_threads_args*)malloc(sizeof(ptr_threads_args));
     if(ptr_save == NULL){
