@@ -102,7 +102,7 @@ void* worker_thread(void* arg) {
         jobs_count ++;
 	active_threads_counter(1);
 	
-        if (log_enabled == 1) { // function?
+        if (log_enabled == 1) { 
             long long time_ms_start = elapsed_time_ms(program_start_time);
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
@@ -121,38 +121,38 @@ void* worker_thread(void* arg) {
 		    sscanf(command, "increment %s", counter_file);
 		    increment(counter_file);
 
-
 		} else if (strncmp(command, "decrement", 9) == 0) {
 		    char counter_file[256];
 		    sscanf(command, "decrement %s", counter_file);
 		    decrement(counter_file);
+		    
 
 		}else if (strncmp(command, "repeat", 6) == 0) {
 	    		int repeat_count;
 	    		// attempt to extract the repeat count from the job line
 	    		if (sscanf(command, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
-				fprintf(stderr, "invalid repeat command or non-positive repeat count\n");
-				free(task_node);
+				fprintf(stderr,"invalid repeat command or non-positive repeat count\n");
 				continue;
 	    		}
+	    		
 // ...;...;...; repeat 5   ;command1;command2
 	    		// find the job part of the repeat line (after the first space)
-	    		char* job = strchr(task_node->job_line, ';');
-	    		if (job) {
-				job++; // move past the semicolon to the job description
+	    		char* repeat_command = strchr(command, ';');
+	    		if (repeat_command) {
+				repeat_command++; // move past the semicolon to the job description
 				// repeat the task based on the repeat count
 				for (int i = 0; i < repeat_count; i++) {
-		    			if (strncmp(job, "increment", 9) == 0) {
+		    			if (strncmp(repeat_command, "increment", 9) == 0) {
 		        			char counter_file[256];
-		        			sscanf(job, "increment %s", counter_file);
+		        			sscanf(repeat_command, "increment %s", counter_file);
 		        			increment(counter_file);
-		    			} else if (strncmp(job, "decrement", 9) == 0) {
+		    			} else if (strncmp(repeat_command, "decrement", 9) == 0) {
 		        			char counter_file[256];
-		        			sscanf(job, "decrement %s", counter_file);
+		        			sscanf(repeat_command, "decrement %s", counter_file);
 		        			decrement(counter_file);
-		    			} else if (strncmp(job, "msleep", 6) == 0) {
+		    			} else if (strncmp(repeat_command, "msleep", 6) == 0) {
 		        			int ms;
-		        			sscanf(job, "msleep %d", &ms);
+		        			sscanf(repeat_command, "msleep %d", &ms);
 		        			msleep(ms);
 		    			}
 				}
