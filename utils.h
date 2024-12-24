@@ -1,17 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
-
 #include "common.h"
 
 
-// DEBUG
-void print_general(char* text);
-// DEBUG
-void print_error(char* err);
-
-/**
- //rewrite
- */
 void* active_threads_counter(int mode);
 
 /**
