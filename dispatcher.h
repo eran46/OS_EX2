@@ -1,5 +1,5 @@
-#ifndef DISPATCHER_H    // Check if the header hasn't been included already
-#define DISPATCHER_H    // Define the header
+#ifndef DISPATCHER_H
+#define DISPATCHER_H
 
 #include "common.h"
 #include "utils.h"
@@ -39,4 +39,4 @@ void parse_cmdfile(FILE* file);
  */
 void dispatcher(FILE* file);
 
-#endif // End of the header guard
+#endif
