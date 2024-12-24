@@ -16,11 +16,11 @@ void dispatcher_done(){
 void dispatcher_wait() {
 	pthread_mutex_lock(&mutex);
 	while(active_threads > 0 || queue->count > 0) {
-		print_general("waiting for active == 0");
+		print_general("dispatcher waiting for active == 0 or queue->count = 0");
 		pthread_cond_wait(&cond, &mutex);
 	}
 	pthread_mutex_unlock(&mutex);
-	print_general("finished waiting");
+	print_general("dispatcher finished waiting");
 }
 
 // parse each line and execute the command
@@ -42,7 +42,9 @@ void parse_line(char *line) {
     }
     else if(strncmp(line, "worker", 6) == 0) {
         // worker job
-        print_general("queueing Worker job\n");
+        print_general("queueing Worker job");
+        line += 6; // past "worker"
+    	while (isspace((unsigned char)*line)) line++; // trim leading spaces
         enqueue(queue, line);
     }
     else{
@@ -64,7 +66,6 @@ void parse_cmdfile(FILE* file) {
     	    if(dispatcher_log == NULL){
     	    	print_error("dispatcher log failed to open");
     	    }
-    	    print_general("created dispatcher log");
     	    struct timeval current_time;
     	    gettimeofday(&current_time, NULL);
     	    long long int elapsed_time = get_elapsed_time_in_ms(current_time);

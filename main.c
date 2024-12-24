@@ -21,7 +21,9 @@ int main(int argc, char *argv[]) {
     gettimeofday(&program_start_time, NULL);
 
     // initialize queue
+    queue = (TaskQueue*)malloc(sizeof(TaskQueue));
     init_queue(queue);
+    
     
     // get program arguments
     if (argc != CMD_ARGS_NUM + 1) {

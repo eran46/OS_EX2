@@ -11,7 +11,9 @@
 
 pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex to protect file access
 
-void increment(const char* filename) {
+void increment(int counter_file_num) {
+    char filename[12];
+    snprintf(filename, sizeof(filename), "count%02d.txt", counter_file_num);
     pthread_mutex_lock(&file_mutex);
     FILE* file = fopen(filename, "r+");
     if (file == NULL) {
@@ -21,13 +23,15 @@ void increment(const char* filename) {
     }
     int value;
     fscanf(file, "%d", &value);
-    rewind(file); // ???
-    fprintf(file, "%d\n", value + 1);
+    rewind(file);
+    fprintf(file, "%d", value + 1);
     fclose(file);
     pthread_mutex_unlock(&file_mutex);
 }
 
-void decrement(const char* filename) {
+void decrement(int counter_file_num) {
+    char filename[12];
+    snprintf(filename, sizeof(filename), "count%02d.txt", counter_file_num);
     pthread_mutex_lock(&file_mutex);
     FILE* file = fopen(filename, "r+");
     if (file == NULL) {
@@ -50,17 +54,22 @@ void logfile_out(FILE* logfile, Node* task_node, struct timeval start_time) {
 }
 
 // function to trim leading and trailing spaces
-void trim_spaces(char* str) {
-    char* end;
+void trim_spaces(char* line) {
+	// Remove leading spaces
+	int start = 0;
+	while (isspace(line[start])) {
+	    start++;
+	}
 
-    // trim leading spaces
-    while (isspace((unsigned char)*str)) str++;
+	// Move the rest of the string to the front
+	memmove(line, line + start, strlen(line) - start + 1);  // Move characters forward
 
-    // trim trailing spaces
-    end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end)) end--;
-    // write new null terminator
-    *(end + 1) = '\0';
+	// Remove trailing spaces
+	line[strcspn(line, "\n")] = 0;
+	while (isspace(line[strlen(line) - 1])) {
+	    line[strlen(line) - 1] = 0;  // Trim trailing spaces
+	}
+    
 }
 
 
@@ -99,13 +108,13 @@ void* worker_thread(void* arg) {
     	// first dequeue
     	Node* task_node = dequeue(queue); // dequeue has cond locking on threads, waits
     	
-    	print_general("thread that just took a job from the queue");
-    	printf("%d\n",thread_id);
-    	
     	// task_node = NULL only when thread was asleep and wokeup to empty queue
         if (task_node == NULL) {
 	    break;
         }
+        
+        print_general("thread that just took a job from the queue");
+    	printf("%d\n",thread_id);
 	
 	// makes a warning
         //if (task_node->job_line == NULL || strlen(task_node->job_line) == 0) { // bad line in queue
@@ -124,37 +133,40 @@ void* worker_thread(void* arg) {
 	if (cpy_line == NULL) {
 	    print_error("allocate memory for copy of string in worker");
 	}
+	printf("%s\n",task_node->job_line);
+	strcpy(cpy_line, task_node->job_line);
 	
         if (log_enabled == 1) {
             long long time_ms_start = elapsed_time_ms(program_start_time);
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
         }
-        // task_node->job_line
-        char* command = strtok(cpy_line,";");
+        char *saveptr;
+        // char* command = strtok(cpy_line,";"); // strtok is not Thread Safe !!
+        char* command = strtok_r(cpy_line,";",&saveptr);
         while(command != NULL){
         	trim_spaces(command);
         	printf("%s\n", command);
+        	fflush(stdout);
 		if (strncmp(command, "msleep", 6) == 0) {
 		    long ms;
 		    sscanf(command, "msleep %ld", &ms);
 		    
 		    print_general("thread sleeping");
-		    printf("%ld seconds\n", ms);
+		    printf("%ld milliseconds\n", ms);
 		    msleep(ms);
 		    print_general("thread finished sleeping");
 
 		} else if (strncmp(command, "increment", 9) == 0) {
-		    char counter_file[256];
-		    sscanf(command, "increment %s", counter_file);
-		    increment(counter_file);
+		    char counter_file_num[3];
+		    sscanf(command, "increment %s", counter_file_num);
+		    increment(str_to_int(counter_file_num));
 
-		} else if (strncmp(command, "decrement", 9) == 0) {
-		    char counter_file[256];
-		    sscanf(command, "decrement %s", counter_file);
-		    decrement(counter_file);
+		} else if (strncmp(command, "decrement", 9) == 0) { 
+		    char counter_file_num[3];
+		    sscanf(command, "decrement %s", counter_file_num);
+		    decrement(str_to_int(counter_file_num));
 		    
-
 		}else if (strncmp(command, "repeat", 6) == 0) {
 	    		int repeat_count;
 	    		// attempt to extract the repeat count from the job line
@@ -171,22 +183,23 @@ void* worker_thread(void* arg) {
 			    	print_error("allocate memory for copy of commands to repeat  in worker");
 			    }	
 	    		    strcpy(repeat_commands_cpy, repeat_commands);
-	    		    char* shit_token = strtok(repeat_commands_cpy, ";");
+	    		    char* saveptr1;
+	    		    char* shit_token = strtok_r(repeat_commands_cpy, ";", &saveptr1);
 	    		    while(shit_token != NULL){
 	    		    	if (strncmp(shit_token, "increment", 9) == 0) {
-	        			char counter_file[256];
-	        			sscanf(shit_token, "increment %s", counter_file);
-	        			increment(counter_file);
+	        			char counter_file_num[3];
+	        			sscanf(shit_token, "increment %s", counter_file_num);
+	        			increment(str_to_int(counter_file_num));
 	    			} else if (strncmp(shit_token, "decrement", 9) == 0) {
-	        			char counter_file[256];
-	        			sscanf(shit_token, "decrement %s", counter_file);
-	        			decrement(counter_file);
+	        			char counter_file_num[3];
+	        			sscanf(shit_token, "decrement %s", counter_file_num);
+	        			decrement(str_to_int(counter_file_num));
 	    			} else if (strncmp(shit_token, "msleep", 6) == 0) {
 	        			int ms;
 	        			sscanf(shit_token, "msleep %d", &ms);
 	        			msleep(ms);
 	    			}
-	    			shit_token = strtok(NULL, ";");
+	    			shit_token = strtok_r(NULL, ";", &saveptr1);
 	    		    }
 	    		    free(repeat_commands_cpy);
 	    		    command = NULL;
@@ -194,7 +207,10 @@ void* worker_thread(void* arg) {
 	    		}
 	    		continue; // if command was repeat, no need to continue
     		}
-    		command = strtok(NULL, ";");
+    		else{
+    			print_general("command not recognized, ignoring");
+    		}
+    		command = strtok_r(NULL, ";", &saveptr);
 	}
 	free(cpy_line);
 	
@@ -202,15 +218,22 @@ void* worker_thread(void* arg) {
 	long long int job_time_elapsed = elapsed_time_ms(job_start_time);
 	update_min_max_sum_times(job_time_elapsed);
 	
-	if (log_enabled == 1) {
+	
+	
+	print_general("thread finished job:");
+    	printf("%d\n",thread_id);
+    	active_threads_counter((int)-1);
+    	
+    	// log
+    	if (log_enabled == 1) {
         	logfile_out(logfile, task_node, program_start_time);
-	}  		
+	}		
     }
 
     if (log_enabled == 1) {
         fclose(logfile);
     }
-    active_threads_counter((int)-1);
+    
     return NULL; // return NULL finishes the thread
 }
 
