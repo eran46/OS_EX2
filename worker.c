@@ -141,9 +141,10 @@ void* worker_thread(void* arg) {
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
         }
+        char* cpy_line_ptr = cpy_line + 6; // past "worker"
         char *saveptr;
         // char* command = strtok(cpy_line,";"); // strtok is not Thread Safe !!
-        char* command = strtok_r(cpy_line,";",&saveptr);
+        char* command = strtok_r(cpy_line_ptr,";",&saveptr);
         while(command != NULL){
         	trim_spaces(command);
         	printf("%s\n", command);

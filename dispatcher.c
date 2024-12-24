@@ -43,7 +43,6 @@ void parse_line(char *line) {
     else if(strncmp(line, "worker", 6) == 0) {
         // worker job
         print_general("queueing Worker job");
-        line += 6; // past "worker"
     	while (isspace((unsigned char)*line)) line++; // trim leading spaces
         enqueue(queue, line);
     }
