@@ -21,7 +21,7 @@ void increment(int counter_file_num) {
         pthread_mutex_unlock(&file_mutex);
         return;
     }
-    int value;
+    long long value;
     fscanf(file, "%lld", &value);
     rewind(file);
     fprintf(file, "%lld", value + 1);
@@ -39,7 +39,7 @@ void decrement(int counter_file_num) {
         pthread_mutex_unlock(&file_mutex);
         return;
     }
-    int value;
+    long long value;
     fscanf(file, "%lld", &value);
     rewind(file); // ??
     fprintf(file, "%lld", value - 1);
