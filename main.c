@@ -3,7 +3,6 @@
 #include <string.h>
 #include <sys/time.h>
 #include <pthread.h>
-
 #include "queue.h"
 #include "dispatcher.h"
 #include "utils.h"
