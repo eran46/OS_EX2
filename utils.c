@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <ctype.h>
 #include <pthread.h>
 #include <string.h>
 
