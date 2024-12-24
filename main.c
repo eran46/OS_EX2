@@ -27,14 +27,14 @@ int main(int argc, char *argv[]) {
     
     // get program arguments
     if (argc != CMD_ARGS_NUM + 1) {
-        print_error("incorrect number of command line arguments");
+        perror("incorrect number of command line arguments");
     }
     int num_threads = str_to_int(argv[2]); // max 4096
     int num_counters = str_to_int(argv[3]); // max 100
     log_enabled = str_to_int(argv[4]);
     FILE* cmdfile = fopen(argv[1], "r"); // open cmdfile
     if (cmdfile == NULL) {
-        print_error("Error opening cmdfile.txt");
+        perror("Error opening cmdfile.txt");
     }
     
     // initialize mutex and cond

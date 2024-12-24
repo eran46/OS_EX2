@@ -54,7 +54,7 @@ void init_counter_files(int num_counters) {
 		snprintf(filename, sizeof(filename), "count%02d.txt", i);
 		FILE* f = fopen(filename, "w");
 		if(f == NULL) {
-			print_error("failed to open file");
+			perror("failed to open file");
 		}
 		else{
 			fprintf(f, "%d", 0); // NO NEW LINE
@@ -68,7 +68,7 @@ void init_dispatcher_log() {
 	sprintf(filename, "dispatcher.txt");
 	FILE* f = fopen(filename, "w");
 	if(f == NULL) {
-		print_error("failed to open file");
+		perror("failed to open file");
 	}
 	fclose(f);
 }

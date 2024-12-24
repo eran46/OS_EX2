@@ -33,7 +33,7 @@ void parse_line(char *line) {
         } else if (strncmp(line + 11, "wait", 4) == 0) {
             dispatcher_wait();
         } else {
-            print_error("Unknown dispatcher command");
+            perror("Unknown dispatcher command");
         }
     }
     else if(strncmp(line, "worker", 6) == 0) {
@@ -42,7 +42,7 @@ void parse_line(char *line) {
         enqueue(queue, line);
     }
     else{
-    	print_error("Unknown job assignment not to worker or dispatcher");
+    	perror("Unknown job assignment not to worker or dispatcher");
     }
 }
 
@@ -50,7 +50,7 @@ void parse_line(char *line) {
 void parse_cmdfile(FILE* file) {
     char* line = (char*)malloc(sizeof(char)*MAX_LINE_LENGTH);
     if(line == NULL){
-    	print_error("on allocating cmdfile line string");
+    	perror("on allocating cmdfile line string");
     }
     while (fgets(line, MAX_LINE_LENGTH, file)) {
 
@@ -58,7 +58,7 @@ void parse_cmdfile(FILE* file) {
     	if(log_enabled == 1){
     	    FILE* dispatcher_log = fopen("dispatcher.txt", "a");
     	    if(dispatcher_log == NULL){
-    	    	print_error("dispatcher log failed to open");
+    	    	perror("dispatcher log failed to open");
     	    }
     	    struct timeval current_time;
     	    gettimeofday(&current_time, NULL);
