@@ -21,12 +21,17 @@ int main(int argc, char *argv[]) {
 
     // initialize queue
     queue = (TaskQueue*)malloc(sizeof(TaskQueue));
+    if(queue == NULL){
+    	perror("error on queue memory allocation");
+    	exit(EXIT_FAILURE);
+    }
     init_queue(queue);
     
     
     // get program arguments
     if (argc != CMD_ARGS_NUM + 1) {
         perror("incorrect number of command line arguments");
+        exit(EXIT_FAILURE);
     }
     int num_threads = str_to_int(argv[2]); // max 4096
     int num_counters = str_to_int(argv[3]); // max 100
@@ -34,6 +39,7 @@ int main(int argc, char *argv[]) {
     FILE* cmdfile = fopen(argv[1], "r"); // open cmdfile
     if (cmdfile == NULL) {
         perror("Error opening cmdfile.txt");
+        exit(EXIT_FAILURE);
     }
     
     // initialize mutex and cond

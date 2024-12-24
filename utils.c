@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <pthread.h>
 #include <string.h>
@@ -43,7 +44,8 @@ void init_counter_files(int num_counters) {
 		snprintf(filename, sizeof(filename), "count%02d.txt", i);
 		FILE* f = fopen(filename, "w");
 		if(f == NULL) {
-			perror("failed to open file");
+			perror("failed to initiate count file");
+			exit(EXIT_FAILURE);
 		}
 		else{
 			fprintf(f, "%d", 0); // NO NEW LINE
@@ -57,7 +59,8 @@ void init_dispatcher_log() {
 	sprintf(filename, "dispatcher.txt");
 	FILE* f = fopen(filename, "w");
 	if(f == NULL) {
-		perror("failed to open file");
+		perror("failed to initiate dispatcher log file");
+		exit(EXIT_FAILURE);
 	}
 	fclose(f);
 }

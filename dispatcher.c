@@ -51,6 +51,7 @@ void parse_cmdfile(FILE* file) {
     char* line = (char*)malloc(sizeof(char)*MAX_LINE_LENGTH);
     if(line == NULL){
     	perror("on allocating cmdfile line string");
+    	exit(EXIT_FAILURE);
     }
     while (fgets(line, MAX_LINE_LENGTH, file)) {
 
@@ -59,6 +60,7 @@ void parse_cmdfile(FILE* file) {
     	    FILE* dispatcher_log = fopen("dispatcher.txt", "a");
     	    if(dispatcher_log == NULL){
     	    	perror("dispatcher log failed to open");
+    	    	exit(EXIT_FAILURE);
     	    }
     	    struct timeval current_time;
     	    gettimeofday(&current_time, NULL);

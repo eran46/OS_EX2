@@ -35,7 +35,7 @@ void decrement(int counter_file_num) {
     pthread_mutex_lock(&file_mutex);
     FILE* file = fopen(filename, "r+");
     if (file == NULL) {
-        perror("Failed to open counter file"); // ???
+        perror("Failed to open counter file");
         pthread_mutex_unlock(&file_mutex);
         return;
     }
@@ -68,40 +68,27 @@ void update_min_max_sum_times(long long int job_time_elapsed){
 void* worker_thread(void* arg) {
     ThreadArgs* args = (ThreadArgs*)arg;
     int thread_id = args->thread_id;
-    
-    print_general("thread that started working:");
-    printf("%d\n",thread_id);
-    
-    
+   
     FILE* logfile = NULL;
     if (log_enabled == 1) {
         char filename[20];
         snprintf(filename, sizeof(filename), "thread%02d.txt", thread_id);
         logfile = fopen(filename, "w");
         if (logfile == NULL) {
-            perror("Failed to open log file"); // ???
-            pthread_exit(NULL); // ???
+            perror("Failed to open log file");
+            return NULL; 
         }
     }
     
     
     while (1) {
-    	// first dequeue
     	Node* task_node = dequeue(queue); // dequeue has cond locking on threads, waits
     	
     	// task_node = NULL only when thread was asleep and wokeup to empty queue
         if (task_node == NULL) {
 	    break;
         }
-        
-        print_general("thread that just took a job from the queue");
-    	printf("%d\n",thread_id);
 	
-	// makes a warning
-        //if (task_node->job_line == NULL || strlen(task_node->job_line) == 0) { // bad line in queue
-        //    free(task_node);
-        //    continue;
-        // }
         
         // ----------> continue if thread has "good" job
 	struct timeval job_start_time;
@@ -112,9 +99,8 @@ void* worker_thread(void* arg) {
 	// hard copy string for token and trailing/leading space removal
 	char* cpy_line = malloc(strlen(task_node->job_line) + 1); 
 	if (cpy_line == NULL) {
-	    print_error("allocate memory for copy of string in worker");
+	    perror("allocate memory for copy of string in worker");
 	}
-	printf("%s\n",task_node->job_line);
 	strcpy(cpy_line, task_node->job_line);
 	
         if (log_enabled == 1) {
@@ -131,16 +117,11 @@ void* worker_thread(void* arg) {
         while(command != NULL){
         	int cmd_len = strlen(command); // length before trimming command
         	trim_spaces(command);
-        	printf("%s\n", command);
         	fflush(stdout);
 		if (strncmp(command, "msleep", 6) == 0) {
 		    long ms;
 		    sscanf(command, "msleep %ld", &ms);
-		    
-		    print_general("thread sleeping");
-		    printf("%ld milliseconds\n", ms);
 		    msleep(ms);
-		    print_general("thread finished sleeping");
 
 		} else if (strncmp(command, "increment", 9) == 0) {
 		    char counter_file_num[3];
@@ -162,16 +143,14 @@ void* worker_thread(void* arg) {
 	    		}
 	    		char* cmd_ptr = command;
 	    		char* repeat_commands = cmd_ptr + cmd_len + 1; // points at rest of line
-	    		printf("DEBUG1 %s\n", repeat_commands);
 	    		for (int i = 0; i < repeat_count; i++) {
 	    		    char* repeat_commands_cpy = (char*)malloc(strlen(repeat_commands)+1);
 	    		    if (repeat_commands_cpy == NULL) {
-			    	print_error("allocate memory for copy of commands to repeat  in worker");
+			    	perror("allocate memory for copy of commands to repeat  in worker");
 			    }	
 	    		    strcpy(repeat_commands_cpy, repeat_commands);
 	    		    char* saveptr1;
 	    		    char* shit_token = strtok_r(repeat_commands_cpy, ";", &saveptr1);
-	    		    printf("shit token1 print %s\n",shit_token);
 	    		    while(shit_token != NULL){
 	    		    	trim_spaces(shit_token);
 	    		    	if (strncmp(shit_token, "increment", 9) == 0) {
@@ -188,7 +167,6 @@ void* worker_thread(void* arg) {
 	        			msleep(ms);
 	    			}
 	    			shit_token = strtok_r(NULL, ";", &saveptr1);
-	    			printf("shit token2 %s\n", shit_token);
 	    		    }
 	    		    free(repeat_commands_cpy);
 	    		    command = NULL;
@@ -196,21 +174,15 @@ void* worker_thread(void* arg) {
 	    		}
 	    		continue; // if command was repeat, no need to continue
     		}
-    		else{
-    			print_general("command not recognized, ignoring");
-    		}
     		command = strtok_r(NULL, ";", &saveptr);
 	}
 	free(cpy_line);
 	
 	// finished job
 	long long int job_time_elapsed = elapsed_time_ms(job_start_time);
+	printf("%lld\n",job_time_elapsed);
 	update_min_max_sum_times(job_time_elapsed);
 	
-	
-	
-	print_general("thread finished job:");
-    	printf("%d\n",thread_id);
     	active_threads_counter((int)-1);
     	
     	// log
@@ -229,23 +201,23 @@ void* worker_thread(void* arg) {
 ptr_threads_args* create_worker_threads(int num_threads) {
     ptr_threads_args* ptr_save = (ptr_threads_args*)malloc(sizeof(ptr_threads_args));
     if(ptr_save == NULL){
-    	print_error("allocating ptr_save");
+    	perror("allocating ptr_save");
     }
     pthread_t* threads = (pthread_t*)malloc(sizeof(pthread_t)*num_threads); // dynamic array of threads
     if(threads == NULL){
-    	print_error("allocating threads array");
+    	perror("allocating threads array");
     }
-    ThreadArgs* args = (ThreadArgs*)malloc(sizeof(ThreadArgs)); // holds threads queue, hw2 start time and 
+    ThreadArgs* args = (ThreadArgs*)malloc(sizeof(ThreadArgs)); 
     if(args == NULL){
-    	print_error("allocating threads arguments array");
+    	perror("allocating threads arguments array");
     }
     ptr_save->args = args;
     ptr_save->threads = threads;
     for (int i = 0; i < num_threads; i++) {
         args[i].thread_id = i;
         if (pthread_create(&threads[i], NULL, worker_thread, &args[i]) != 0) {
-            perror("Failed to create worker thread"); // ???
-            exit(EXIT_FAILURE); // ???
+            perror("Failed to create worker thread");
+            exit(EXIT_FAILURE);
         }
     }
     

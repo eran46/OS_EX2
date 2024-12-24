@@ -22,7 +22,7 @@ void enqueue(TaskQueue* queue, const char* job_line) {
     if (new_node == NULL) {
         perror("Failed to allocate memory for new node"); 
         pthread_mutex_unlock(&queue->lock);
-        return;
+        exit(EXIT_FAILURE);
     }
     strncpy(new_node->job_line, job_line, sizeof(new_node->job_line) - 1);
     new_node->job_line[sizeof(new_node->job_line) - 1] = '\0';
@@ -48,10 +48,8 @@ Node* dequeue(TaskQueue* queue) {
     		return NULL;
     	}
     	// thread will sleep until signal or broadcast  
-    	printf("a thread is waiting for the queue to fill\n");
         pthread_cond_wait(&queue->cond_nonempty, &queue->lock);
     }
-    printf("a thread woke up\n");
     fflush(stdout); // avoid other threads changing buffer
     Node* temp = queue->front;
     queue->front = queue->front->next;
