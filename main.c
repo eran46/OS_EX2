@@ -28,11 +28,14 @@ int main(int argc, char *argv[]) {
     // get program arguments
     if (argc != CMD_ARGS_NUM + 1) {
         print_error("incorrect number of command line arguments");
-        return 1;
     }
     int num_threads = str_to_int(argv[2]); // max 4096
     int num_counters = str_to_int(argv[3]); // max 100
     log_enabled = str_to_int(argv[4]);
+    FILE* cmdfile = fopen(argv[1], "r"); // open cmdfile
+    if (cmdfile == NULL) {
+        print_error("Error opening cmdfile.txt");
+    }
     
     // initialize mutex and cond
     pthread_mutex_init(&mutex, NULL);
@@ -43,21 +46,12 @@ int main(int argc, char *argv[]) {
     
     // initialize threads
     ptr_threads_args* save_ptr = create_worker_threads(num_threads);
-    print_general("initialized all worker threads");
     
     // dispatcher
-    FILE* cmdfile = fopen(argv[1], "r");
-    if (cmdfile == NULL) {
-        print_error("Error opening cmdfile.txt");
-        // action? cleanup before exit?
-    }
-    print_general("cmdfile opened");
     dispatcher(cmdfile);
-    
-    print_general("dispatcher finished");
-    destroy_threads(save_ptr->threads, num_threads);
-    print_general("threads destroyed");
-    
+
+    // join all threads
+    destroy_threads(save_ptr->threads, num_threads); 
     
     // -------------> statistics output
     struct timeval program_end_time; // get program end time
@@ -73,6 +67,7 @@ int main(int argc, char *argv[]) {
     free(save_ptr);
     
     // close all files
+    fclose(cmdfile);
     
      // destroy mutex and cond
     pthread_mutex_destroy(&mutex);

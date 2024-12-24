@@ -31,7 +31,6 @@ void* active_threads_counter(int mode) {
 		break;
 	default:
 		pthread_mutex_unlock(&mutex);
-        	print_general("invalid mode value, ignored.\n");
         	break;
 	}
 	pthread_mutex_unlock(&mutex);
@@ -91,6 +90,25 @@ void print_statistics(long long int program_time) {
 
 
 void msleep(long time_ms) {
-    usleep(time_ms * 1000);  // Convert milliseconds to microseconds
+    usleep(time_ms * 1000);  // convert milliseconds to microseconds
+}
+
+// function to trim leading and trailing spaces
+void trim_spaces(char* line) {
+	// Remove leading spaces
+	int start = 0;
+	while (isspace(line[start])) {
+	    start++;
+	}
+
+	// Move the rest of the string to the front
+	memmove(line, line + start, strlen(line) - start + 1);  // Move characters forward
+
+	// Remove trailing spaces
+	line[strcspn(line, "\n")] = 0;
+	while (isspace(line[strlen(line) - 1])) {
+	    line[strlen(line) - 1] = 0;  // Trim trailing spaces
+	}
+    
 }
 

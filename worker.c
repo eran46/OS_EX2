@@ -17,7 +17,7 @@ void increment(int counter_file_num) {
     pthread_mutex_lock(&file_mutex);
     FILE* file = fopen(filename, "r+");
     if (file == NULL) {
-        perror("Failed to open counter file"); // ???
+        perror("Failed to open counter file");
         pthread_mutex_unlock(&file_mutex);
         return;
     }
@@ -51,25 +51,6 @@ void logfile_out(FILE* logfile, Node* task_node, struct timeval start_time) {
     long long time_ms_end = elapsed_time_ms(start_time);
     fprintf(logfile, "TIME %lld: END job %s\n", time_ms_end, task_node->job_line);
     fflush(logfile);
-}
-
-// function to trim leading and trailing spaces
-void trim_spaces(char* line) {
-	// Remove leading spaces
-	int start = 0;
-	while (isspace(line[start])) {
-	    start++;
-	}
-
-	// Move the rest of the string to the front
-	memmove(line, line + start, strlen(line) - start + 1);  // Move characters forward
-
-	// Remove trailing spaces
-	line[strcspn(line, "\n")] = 0;
-	while (isspace(line[strlen(line) - 1])) {
-	    line[strlen(line) - 1] = 0;  // Trim trailing spaces
-	}
-    
 }
 
 
@@ -141,10 +122,14 @@ void* worker_thread(void* arg) {
             fprintf(logfile, "TIME %lld: START job %s\n", time_ms_start, task_node->job_line);
             fflush(logfile);
         }
+        char* cpy_line_ptr = cpy_line + 6; // past "worker"
+        
+        
         char *saveptr;
         // char* command = strtok(cpy_line,";"); // strtok is not Thread Safe !!
-        char* command = strtok_r(cpy_line,";",&saveptr);
+        char* command = strtok_r(cpy_line_ptr,";",&saveptr);
         while(command != NULL){
+        	int cmd_len = strlen(command); // length before trimming command
         	trim_spaces(command);
         	printf("%s\n", command);
         	fflush(stdout);
@@ -171,12 +156,13 @@ void* worker_thread(void* arg) {
 	    		int repeat_count;
 	    		// attempt to extract the repeat count from the job line
 	    		if (sscanf(command, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
-				fprintf(stderr, "invalid repeat command or non-positive repeat count\n"); // ???
+				fprintf(stderr, "invalid repeat command or non-positive repeat count\n");
 				free(task_node);
 				continue;
 	    		}
-	    		char* repeat_commands = strchr(command, ';');
-	    		repeat_commands++; // start of commands to repeat
+	    		char* cmd_ptr = command;
+	    		char* repeat_commands = cmd_ptr + cmd_len + 1; // points at rest of line
+	    		printf("DEBUG1 %s\n", repeat_commands);
 	    		for (int i = 0; i < repeat_count; i++) {
 	    		    char* repeat_commands_cpy = (char*)malloc(strlen(repeat_commands)+1);
 	    		    if (repeat_commands_cpy == NULL) {
@@ -185,7 +171,9 @@ void* worker_thread(void* arg) {
 	    		    strcpy(repeat_commands_cpy, repeat_commands);
 	    		    char* saveptr1;
 	    		    char* shit_token = strtok_r(repeat_commands_cpy, ";", &saveptr1);
+	    		    printf("shit token1 print %s\n",shit_token);
 	    		    while(shit_token != NULL){
+	    		    	trim_spaces(shit_token);
 	    		    	if (strncmp(shit_token, "increment", 9) == 0) {
 	        			char counter_file_num[3];
 	        			sscanf(shit_token, "increment %s", counter_file_num);
@@ -200,6 +188,7 @@ void* worker_thread(void* arg) {
 	        			msleep(ms);
 	    			}
 	    			shit_token = strtok_r(NULL, ";", &saveptr1);
+	    			printf("shit token2 %s\n", shit_token);
 	    		    }
 	    		    free(repeat_commands_cpy);
 	    		    command = NULL;

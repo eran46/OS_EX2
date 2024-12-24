@@ -62,5 +62,6 @@ void print_statistics(long long int program_time);
  * @param time_ms long sleep time in milliseconds.
  */
 void msleep(long time_ms);
+void trim_spaces(char* line);
 
 #endif

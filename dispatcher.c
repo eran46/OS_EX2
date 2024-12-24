@@ -16,11 +16,9 @@ void dispatcher_done(){
 void dispatcher_wait() {
 	pthread_mutex_lock(&mutex);
 	while(active_threads > 0 || queue->count > 0) {
-		print_general("dispatcher waiting for active == 0 or queue->count = 0");
 		pthread_cond_wait(&cond, &mutex);
 	}
 	pthread_mutex_unlock(&mutex);
-	print_general("dispatcher finished waiting");
 }
 
 // parse each line and execute the command
@@ -31,10 +29,8 @@ void parse_line(char *line) {
         if (strncmp(line + 11, "msleep", 6) == 0) {
             token = strtok(line + 18, " ;");
             long sleep_time_ms = str_to_int(token);
-            print_general("Dispatcher sleep for milliseconds");
             msleep(sleep_time_ms);
         } else if (strncmp(line + 11, "wait", 4) == 0) {
-            print_general("Dispatcher waiting for worker jobs to complete");
             dispatcher_wait();
         } else {
             print_error("Unknown dispatcher command");
@@ -42,13 +38,11 @@ void parse_line(char *line) {
     }
     else if(strncmp(line, "worker", 6) == 0) {
         // worker job
-        print_general("queueing Worker job");
-        line += 6; // past "worker"
     	while (isspace((unsigned char)*line)) line++; // trim leading spaces
         enqueue(queue, line);
     }
     else{
-    	print_error("Unknown entity job assignment");
+    	print_error("Unknown job assignment not to worker or dispatcher");
     }
 }
 
@@ -56,7 +50,7 @@ void parse_line(char *line) {
 void parse_cmdfile(FILE* file) {
     char* line = (char*)malloc(sizeof(char)*MAX_LINE_LENGTH);
     if(line == NULL){
-    	print_error("allocating line string");
+    	print_error("on allocating cmdfile line string");
     }
     while (fgets(line, MAX_LINE_LENGTH, file)) {
 
@@ -73,20 +67,7 @@ void parse_cmdfile(FILE* file) {
     	    fclose(dispatcher_log);
     	}
     	
-    	// Remove leading spaces
-        int start = 0;
-        while (isspace(line[start])) {
-            start++;
-        }
-        
-        // Move the rest of the string to the front
-        memmove(line, line + start, strlen(line) - start + 1);  // Move characters forward
-	
-        // Remove trailing spaces
-        line[strcspn(line, "\n")] = 0;
-        while (isspace(line[strlen(line) - 1])) {
-            line[strlen(line) - 1] = 0;  // Trim trailing spaces
-        }
+    	trim_spaces(line); // trim trailing or leading spaces
 
 	// Skip empty lines
         if (strlen(line) == 0) { 
@@ -96,11 +77,7 @@ void parse_cmdfile(FILE* file) {
         parse_line(line);
     }
     
-    dispatcher_done_flag = 1;
-    
-   
-
-    fclose(file);
+    dispatcher_done_flag = 1; // marks dispatcher is done reading cmdfile
 }
 
 void dispatcher(FILE* file){
