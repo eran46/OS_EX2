@@ -7,11 +7,13 @@
 //DEBUG
 void print_general(char* text) {
 	printf("general print: %s\n",text);
+	fflush(stdout);
 }
 
 // DEBUG
 void print_error(char* err) {
 	printf("Error: %s\n", err);
+	fflush(stdout);
 }
 
 // mode: -1 decrement, 1 increment
@@ -23,6 +25,9 @@ void* active_threads_counter(int mode) {
 		break;
 	case (-1):
 		active_threads--;
+		if(active_threads == 0 && queue->count == 0){
+			pthread_cond_signal(&cond); // wake up dispatcher
+		}
 		break;
 	default:
 		pthread_mutex_unlock(&mutex);

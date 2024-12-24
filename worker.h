@@ -17,8 +17,8 @@ typedef struct {
     pthread_t* threads;
 } ptr_threads_args;
 
-void increment(const char* filename);
-void decrement(const char* filename);
+void increment(int counter_file_num);
+void decrement(int counter_file_num);
 void logfile_out(FILE* logfile, Node* task_node, struct timeval start_time);
 void trim_spaces(char* str);
 void update_min_max_sum_times(long long int job_time_elapsed);

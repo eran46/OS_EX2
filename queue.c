@@ -35,7 +35,7 @@ void enqueue(TaskQueue* queue, const char* job_line) {
         queue->rear = new_node;
     }
     queue->count++;
-    pthread_cond_signal(&queue->cond_nonempty);
+    pthread_cond_broadcast(&queue->cond_nonempty);
     pthread_mutex_unlock(&queue->lock);
 }
 
@@ -51,6 +51,8 @@ Node* dequeue(TaskQueue* queue) {
     	printf("a thread is waiting for the queue to fill\n");
         pthread_cond_wait(&queue->cond_nonempty, &queue->lock);
     }
+    printf("a thread woke up\n");
+    fflush(stdout); // avoid other threads changing buffer
     Node* temp = queue->front;
     queue->front = queue->front->next;
     if (queue->front == NULL) {
