@@ -142,6 +142,8 @@ void* worker_thread(void* arg) {
             fflush(logfile);
         }
         char* cpy_line_ptr = cpy_line + 6; // past "worker"
+        
+        
         char *saveptr;
         // char* command = strtok(cpy_line,";"); // strtok is not Thread Safe !!
         char* command = strtok_r(cpy_line_ptr,";",&saveptr);
