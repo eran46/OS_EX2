@@ -4,18 +4,6 @@
 #include <pthread.h>
 #include <string.h>
 
-//DEBUG
-void print_general(char* text) {
-	printf("general print: %s\n",text);
-	fflush(stdout);
-}
-
-// DEBUG
-void print_error(char* err) {
-	printf("Error: %s\n", err);
-	fflush(stdout);
-}
-
 // mode: -1 decrement, 1 increment
 void* active_threads_counter(int mode) { 
 	pthread_mutex_lock(&mutex);

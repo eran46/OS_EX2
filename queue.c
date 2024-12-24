@@ -20,7 +20,7 @@ void enqueue(TaskQueue* queue, const char* job_line) {
     pthread_mutex_lock(&queue->lock);
     Node* new_node = (Node*)malloc(sizeof(Node));
     if (new_node == NULL) {
-        perror("Failed to allocate memory for new node"); // ???
+        perror("Failed to allocate memory for new node"); 
         pthread_mutex_unlock(&queue->lock);
         return;
     }
