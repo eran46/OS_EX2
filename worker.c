@@ -146,6 +146,7 @@ void* worker_thread(void* arg) {
         // char* command = strtok(cpy_line,";"); // strtok is not Thread Safe !!
         char* command = strtok_r(cpy_line_ptr,";",&saveptr);
         while(command != NULL){
+        	int cmd_len = strlen(command); // length before trimming command
         	trim_spaces(command);
         	printf("%s\n", command);
         	fflush(stdout);
@@ -172,12 +173,13 @@ void* worker_thread(void* arg) {
 	    		int repeat_count;
 	    		// attempt to extract the repeat count from the job line
 	    		if (sscanf(command, "repeat %d", &repeat_count) != 1 || repeat_count < 1) {
-				fprintf(stderr, "invalid repeat command or non-positive repeat count\n"); // ???
+				fprintf(stderr, "invalid repeat command or non-positive repeat count\n");
 				free(task_node);
 				continue;
 	    		}
-	    		char* repeat_commands = strchr(command, ';');
-	    		repeat_commands++; // start of commands to repeat
+	    		char* cmd_ptr = command;
+	    		char* repeat_commands = cmd_ptr + cmd_len + 1; // points at rest of line
+	    		printf("DEBUG1 %s\n", repeat_commands);
 	    		for (int i = 0; i < repeat_count; i++) {
 	    		    char* repeat_commands_cpy = (char*)malloc(strlen(repeat_commands)+1);
 	    		    if (repeat_commands_cpy == NULL) {
@@ -186,7 +188,9 @@ void* worker_thread(void* arg) {
 	    		    strcpy(repeat_commands_cpy, repeat_commands);
 	    		    char* saveptr1;
 	    		    char* shit_token = strtok_r(repeat_commands_cpy, ";", &saveptr1);
+	    		    printf("shit token1 print %s\n",shit_token);
 	    		    while(shit_token != NULL){
+	    		    	trim_spaces(shit_token);
 	    		    	if (strncmp(shit_token, "increment", 9) == 0) {
 	        			char counter_file_num[3];
 	        			sscanf(shit_token, "increment %s", counter_file_num);
@@ -201,6 +205,7 @@ void* worker_thread(void* arg) {
 	        			msleep(ms);
 	    			}
 	    			shit_token = strtok_r(NULL, ";", &saveptr1);
+	    			printf("shit token2 %s\n", shit_token);
 	    		    }
 	    		    free(repeat_commands_cpy);
 	    		    command = NULL;
